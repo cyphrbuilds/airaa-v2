@@ -43,7 +43,7 @@ export function GlobalSidebar() {
   return (
     <div 
       className={cn(
-        "flex h-screen flex-col border-r border-zinc-800/50 bg-zinc-950 sidebar-transition flex-shrink-0",
+        "flex h-screen flex-col border-r border-zinc-800/50 bg-zinc-950 sidebar-transition flex-shrink-0 sticky top-0",
         isCollapsed ? "w-[72px]" : "w-[240px]"
       )}
     >

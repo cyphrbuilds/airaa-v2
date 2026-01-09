@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { Users, ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 /**
@@ -101,15 +100,7 @@ export function AppHeader({
               )}
             >
               <Users className="h-4 w-4" />
-              <span className="text-sm font-medium">{membersCount}</span>
-              {onlineCount > 0 && (
-                <Badge 
-                  variant="secondary" 
-                  className="h-5 px-1.5 text-[10px] bg-green-500/20 text-green-400 border-0"
-                >
-                  {onlineCount} online
-                </Badge>
-              )}
+              <span className="text-sm font-medium">{membersCount} members</span>
             </Button>
           )}
         </div>
