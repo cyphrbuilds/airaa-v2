@@ -1,7 +1,0 @@
-{
-  "/campaigns/page": "app/campaigns/page.js",
-  "/discover/page": "app/discover/page.js",
-  "/leaderboard/page": "app/leaderboard/page.js",
-  "/guild/[id]/page": "app/guild/[id]/page.js",
-  "/guild/[id]/campaign/[campaignId]/page": "app/guild/[id]/campaign/[campaignId]/page.js"
-}
