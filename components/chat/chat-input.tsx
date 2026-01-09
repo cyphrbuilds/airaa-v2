@@ -200,12 +200,12 @@ export function ChatInput({
             className={cn(
               "w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-zinc-100",
               "placeholder:text-zinc-500 resize-none",
-              "focus:outline-none focus:ring-1",
+              "focus:outline-none focus:ring-1 focus:ring-[var(--ring-color)]",
               "min-h-[48px] max-h-[150px]"
             )}
             style={{
-              focusRingColor: accentColor,
-            }}
+              '--ring-color': accentColor,
+            } as React.CSSProperties}
             rows={1}
           />
         </div>

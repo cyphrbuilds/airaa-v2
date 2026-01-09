@@ -160,12 +160,12 @@ export function ChatMessageComponent({
                         className={cn(
                           "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all",
                           hasUserReacted(reaction.emoji)
-                            ? "bg-zinc-700 ring-1"
+                            ? "bg-zinc-700 ring-1 ring-[var(--ring-color)]"
                             : "bg-zinc-800 hover:bg-zinc-700"
                         )}
-                        style={hasUserReacted(reaction.emoji) ? {
-                          ringColor: guild.accentColor,
-                        } : undefined}
+                        style={{
+                          '--ring-color': guild.accentColor,
+                        } as React.CSSProperties}
                       >
                         <span>{reaction.emoji}</span>
                         <span className="text-zinc-400">{reaction.count}</span>
