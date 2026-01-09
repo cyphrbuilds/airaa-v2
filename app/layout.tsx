@@ -22,7 +22,7 @@ export default function RootLayout({
           <TooltipProvider delayDuration={0}>
             <div className="flex min-h-screen bg-[#0a0a0a] overflow-x-hidden">
               <GlobalSidebar />
-              <main className="ml-[72px] flex-1 transition-all duration-200 overflow-x-hidden max-w-[calc(100vw-72px)]">{children}</main>
+              <main className="flex-1 transition-all duration-200 overflow-x-hidden">{children}</main>
             </div>
           </TooltipProvider>
         </AuthProvider>

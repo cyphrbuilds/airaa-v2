@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Compass, Trophy, Medal, Plus, User, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Compass, Trophy, Medal, Plus, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
 import { guilds } from '@/lib/mock-data'
@@ -16,8 +16,6 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed'
-
 const navItems = [
   { id: 'discover', label: 'Discover', icon: Compass, href: '/discover' },
   { id: 'campaigns', label: 'Campaigns', icon: Trophy, href: '/campaigns' },
@@ -27,22 +25,13 @@ const navItems = [
 export function GlobalSidebar() {
   const pathname = usePathname()
   const { user } = useAuth()
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(false)
 
-  // Load collapsed state from localStorage
+  // Auto-collapse when navigating to guild routes
   useEffect(() => {
-    const saved = localStorage.getItem(SIDEBAR_COLLAPSED_KEY)
-    if (saved !== null) {
-      setIsCollapsed(saved === 'true')
-    }
-  }, [])
-
-  // Save collapsed state to localStorage
-  const toggleSidebar = () => {
-    const newState = !isCollapsed
-    setIsCollapsed(newState)
-    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(newState))
-  }
+    const isInGuild = pathname.startsWith('/guild/')
+    setIsCollapsed(isInGuild)
+  }, [pathname])
   
   const joinedGuilds = guilds.filter(g => 
     user.joinedGuilds.includes(g.id)
@@ -54,7 +43,7 @@ export function GlobalSidebar() {
   return (
     <div 
       className={cn(
-        "fixed left-0 top-0 z-50 flex h-screen flex-col border-r border-zinc-800/50 sidebar-transition",
+        "flex h-screen flex-col border-r border-zinc-800/50 bg-zinc-950 sidebar-transition flex-shrink-0",
         isCollapsed ? "w-[72px]" : "w-[240px]"
       )}
     >
@@ -280,30 +269,6 @@ export function GlobalSidebar() {
         )}
       </div>
 
-      {/* Toggle Button */}
-      <div className={cn(
-        "border-t border-zinc-800/50 py-2",
-        isCollapsed ? "px-3" : "px-3"
-      )}>
-        <button
-          onClick={toggleSidebar}
-          className={cn(
-            "flex items-center justify-center rounded-lg transition-colors",
-            isCollapsed 
-              ? "h-10 w-full hover:bg-zinc-800" 
-              : "h-10 w-full gap-2 hover:bg-zinc-800 text-zinc-400"
-          )}
-        >
-          {isCollapsed ? (
-            <ChevronRight className="h-4 w-4 text-zinc-400" />
-          ) : (
-            <>
-              <ChevronLeft className="h-4 w-4" />
-              <span className="text-sm">Collapse</span>
-            </>
-          )}
-        </button>
-      </div>
     </div>
   )
 }
