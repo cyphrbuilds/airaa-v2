@@ -6,6 +6,7 @@ import { AppContainer } from '@/components/app-container'
 import { Button } from '@/components/ui/button'
 import { useGuild } from '@/lib/guild-context'
 import { getStoreAppBySlug } from '@/lib/mock-data'
+import { HowItWorksModal } from '@/components/how-it-works'
 
 export default function GenericAppPage() {
   const params = useParams()
@@ -66,6 +67,7 @@ export default function GenericAppPage() {
       appIcon={appInfo.icon}
       appDescription={appInfo.description}
       appColor={appColor}
+      headerActions={<HowItWorksModal appSlug={appType} communityName={guild.name} />}
     >
       {/* Empty State - Coming Soon */}
       <div className="flex flex-col items-center justify-center h-full min-h-[500px] px-4 relative">

@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AvatarStack } from '@/components/ui/avatar-stack'
 import { AppContainer } from '@/components/app-container'
+import { InfoFiHowItWorksModal } from '@/components/infofi'
 import { useGuild } from '@/lib/guild-context'
 import { 
   getCampaignsByType,
@@ -136,6 +137,7 @@ export default function InfoFiAppPage() {
       appIcon={appInfo.icon}
       appDescription={appInfo.description}
       appColor={infofiApp?.color || defaultAppInfo.color}
+      headerActions={<InfoFiHowItWorksModal />}
     >
       {/* Campaigns Header */}
       <div className="flex items-center justify-between mb-6">
