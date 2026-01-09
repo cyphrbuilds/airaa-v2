@@ -3,7 +3,9 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
-import { getGuildById, getGuildInstalledApps, getCampaignsByType } from '@/lib/mock-data'
+import { AppContainer } from '@/components/app-container'
+import { useGuild } from '@/lib/guild-context'
+import { getGuildInstalledApps, getCampaignsByType } from '@/lib/mock-data'
 import { CampaignType, AppType } from '@/types'
 
 // Map AppType to CampaignType
@@ -17,13 +19,9 @@ const APP_TO_CAMPAIGN_TYPE: Record<AppType, CampaignType> = {
 export default function GuildAppsPage() {
   const params = useParams()
   const guildId = params.id as string
+  const { guild, getCustomizedApp } = useGuild()
   
-  const guild = getGuildById(guildId)
   const installedApps = getGuildInstalledApps(guildId)
-
-  if (!guild) {
-    return null
-  }
 
   // Get campaign counts for each app type
   const getAppCampaignCount = (type: AppType): number => {
@@ -32,52 +30,64 @@ export default function GuildAppsPage() {
   }
 
   return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-semibold text-white">Installed Apps</h2>
-          <p className="text-sm text-zinc-500">
-            Campaign types available in this guild
-          </p>
-        </div>
-      </div>
-
+    <AppContainer
+      appId="apps"
+      appName="Apps"
+      appIcon="📱"
+      appDescription="Campaign types available in this guild"
+    >
       {/* Apps Grid */}
       {installedApps.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {installedApps.map((app) => (
-            <Link 
-              key={app.id} 
-              href={`/guild/${guildId}/apps/${app.type}`}
-              className="group"
-            >
-              <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-5 hover:bg-zinc-900/60 hover:border-zinc-700 transition-all">
-                <div className="flex items-center gap-4">
-                  <div 
-                    className="h-12 w-12 rounded-xl flex items-center justify-center text-2xl"
-                    style={{ backgroundColor: `${app.color}20` }}
-                  >
-                    {app.icon}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {installedApps.map((app) => {
+            const customizedApp = getCustomizedApp(app)
+            // app.type can be any string slug from the app store, only count if it's a known campaign type
+            const appType = app.type as AppType
+            const campaignCount = APP_TO_CAMPAIGN_TYPE[appType] ? getAppCampaignCount(appType) : 0
+            return (
+              <Link 
+                key={app.id} 
+                href={`/guild/${guildId}/apps/${app.type}`}
+                className="group"
+              >
+                <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-5 hover:bg-zinc-900/60 hover:border-zinc-700 transition-all h-full">
+                  <div className="flex items-start gap-4">
+                    <div 
+                      className="h-14 w-14 rounded-xl flex items-center justify-center text-2xl flex-shrink-0"
+                      style={{ backgroundColor: `${app.color}20` }}
+                    >
+                      {customizedApp.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-zinc-100 group-hover:text-white transition-colors mb-1">
+                        {customizedApp.name}
+                      </h3>
+                      <p className="text-sm text-zinc-500 mb-3">
+                        {customizedApp.description}
+                      </p>
+                      {campaignCount > 0 && (
+                        <span 
+                          className="text-xs font-medium px-2 py-1 rounded-full"
+                          style={{ 
+                            backgroundColor: `${app.color}20`,
+                            color: app.color 
+                          }}
+                        >
+                          {campaignCount} active campaign{campaignCount !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-zinc-400 transition-colors flex-shrink-0 mt-1" />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-zinc-100 group-hover:text-white transition-colors">
-                      {app.name}
-                    </h3>
-                    <p className="text-sm text-zinc-500 truncate">
-                      {app.description}
-                    </p>
-                  </div>
-                  <ArrowRight className="h-5 w-5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            )
+          })}
         </div>
       ) : (
-        <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-8 text-center">
+        <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-12 text-center">
           <div 
-            className="h-12 w-12 rounded-lg flex items-center justify-center text-3xl mx-auto mb-4"
+            className="h-16 w-16 rounded-xl flex items-center justify-center text-4xl mx-auto mb-4"
             style={{ backgroundColor: `${guild.accentColor}20` }}
           >
             📱
@@ -88,6 +98,6 @@ export default function GuildAppsPage() {
           </p>
         </div>
       )}
-    </div>
+    </AppContainer>
   )
 }

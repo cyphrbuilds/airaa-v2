@@ -3,11 +3,18 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, ChevronRight, CheckCircle } from 'lucide-react'
+import { ChevronDown, ChevronRight, CheckCircle, MoreVertical, Settings, BarChart3, PlusCircle } from 'lucide-react'
 import { Guild, InstalledApp } from '@/types'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { getGuildInstalledApps } from '@/lib/mock-data'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useGuild } from '@/lib/guild-context'
+import { AppSettingsModal, AppCustomization } from '@/components/guild/app-settings-modal'
 
 interface GuildSidebarProps {
   guild: Guild
@@ -16,8 +23,14 @@ interface GuildSidebarProps {
 export function GuildSidebar({ guild }: GuildSidebarProps) {
   const pathname = usePathname()
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
+  const [hoveredAppId, setHoveredAppId] = useState<string | null>(null)
+  const [openMenuAppId, setOpenMenuAppId] = useState<string | null>(null) // Track which app's dropdown is open
+  const [settingsModalApp, setSettingsModalApp] = useState<InstalledApp | null>(null)
   
-  const installedApps = getGuildInstalledApps(guild.id)
+  const { getAppCustomization, setAppCustomization, getCustomizedApp, userRole, allInstalledApps } = useGuild()
+  const installedApps = allInstalledApps
+  
+  const isAdmin = userRole === 'admin'
 
   const toggleSection = (sectionId: string) => {
     setCollapsedSections(prev => {
@@ -33,8 +46,14 @@ export function GuildSidebar({ guild }: GuildSidebarProps) {
 
   const isActive = (href: string) => pathname === href
   const isAppActive = (appType: string) => pathname.startsWith(`/guild/${guild.id}/apps/${appType}`)
+  const isAdminActive = (path: string) => pathname.startsWith(`/guild/${guild.id}/admin/${path}`)
+
+  const handleAppSettingsSave = (customization: AppCustomization) => {
+    setAppCustomization(customization)
+  }
 
   return (
+    <>
     <div className="flex h-full w-[240px] flex-col border-r border-zinc-800/50">
       {/* Banner */}
       <div className="relative h-28 overflow-hidden">
@@ -78,6 +97,57 @@ export function GuildSidebar({ guild }: GuildSidebarProps) {
       {/* Navigation */}
       <ScrollArea className="flex-1">
         <div className="p-2">
+            {/* Admin Area Section - Only visible to admins, positioned at top */}
+            {isAdmin && (
+              <div className="mb-3 p-2 rounded-lg bg-gradient-to-r from-zinc-800/80 to-zinc-800/40 border border-zinc-700/50">
+                <div className="flex items-center gap-2 px-1 pb-2">
+                  <div 
+                    className="h-5 w-5 rounded flex items-center justify-center"
+                    style={{ backgroundColor: `${guild.accentColor}30` }}
+                  >
+                    <Settings className="h-3 w-3" style={{ color: guild.accentColor }} />
+                  </div>
+                  <span className="text-xs font-semibold text-zinc-300 uppercase tracking-wider">
+                    Admin Area
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  <Link
+                    href={`/guild/${guild.id}/admin/dashboard`}
+                    className={cn(
+                      "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all",
+                      isAdminActive('dashboard')
+                        ? "text-white" 
+                        : "text-zinc-300 hover:text-white hover:bg-zinc-700/50"
+                    )}
+                    style={isAdminActive('dashboard') ? { 
+                      backgroundColor: `${guild.accentColor}25`,
+                      color: guild.accentColor
+                    } : undefined}
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                  <Link
+                    href={`/guild/${guild.id}/admin/app-store`}
+                    className={cn(
+                      "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all",
+                      isAdminActive('app-store')
+                        ? "text-white" 
+                        : "text-zinc-300 hover:text-white hover:bg-zinc-700/50"
+                    )}
+                    style={isAdminActive('app-store') ? { 
+                      backgroundColor: `${guild.accentColor}25`,
+                      color: guild.accentColor
+                    } : undefined}
+                  >
+                    <PlusCircle className="h-4 w-4" />
+                    <span>App Store</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+
           {/* Support Section */}
           <div className="mb-1">
             <div className="px-2 py-1.5 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
@@ -85,8 +155,17 @@ export function GuildSidebar({ guild }: GuildSidebarProps) {
             </div>
             <div className="space-y-0.5">
               <Link
-                href="#"
-                className="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50 transition-all"
+                  href={`/guild/${guild.id}/support`}
+                  className={cn(
+                    "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all",
+                    isActive(`/guild/${guild.id}/support`)
+                      ? "text-white" 
+                      : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
+                  )}
+                  style={isActive(`/guild/${guild.id}/support`) ? { 
+                    backgroundColor: `${guild.accentColor}20`,
+                    color: guild.accentColor
+                  } : undefined}
               >
                 <span>💬</span>
                 <span>Creator support chat</span>
@@ -178,14 +257,23 @@ export function GuildSidebar({ guild }: GuildSidebarProps) {
               {!collapsedSections.has('apps') && (
                 <div className="space-y-0.5">
                   {installedApps.map((app) => {
+                      const customizedApp = getCustomizedApp(app)
                     const active = isAppActive(app.type)
+                      const isHovered = hoveredAppId === app.id
+                      
+                      const showMenu = isHovered || openMenuAppId === app.id
                     
                     return (
+                        <div
+                          key={app.id}
+                          className="relative group"
+                          onMouseEnter={() => setHoveredAppId(app.id)}
+                          onMouseLeave={() => setHoveredAppId(null)}
+                        >
                       <Link
-                        key={app.id}
                         href={`/guild/${guild.id}/apps/${app.type}`}
                         className={cn(
-                          "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all",
+                              "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all pr-8",
                           active 
                             ? "text-white" 
                             : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50"
@@ -195,17 +283,68 @@ export function GuildSidebar({ guild }: GuildSidebarProps) {
                           color: app.color
                         } : undefined}
                       >
-                        <span>{app.icon}</span>
-                        <span>{app.name}</span>
+                            <span>{customizedApp.icon}</span>
+                            <span className="truncate">{customizedApp.name}</span>
                       </Link>
+                          
+                          {/* Three-dot menu - shows on hover or when dropdown is open */}
+                          <div 
+                            className={cn(
+                              "absolute right-1 top-1/2 -translate-y-1/2 transition-opacity z-10",
+                              showMenu ? "opacity-100" : "opacity-0 pointer-events-none"
+                            )}
+                          >
+                            <DropdownMenu 
+                              onOpenChange={(open) => setOpenMenuAppId(open ? app.id : null)}
+                            >
+                              <DropdownMenuTrigger asChild>
+                                <button 
+                                  className="h-6 w-6 flex items-center justify-center rounded hover:bg-zinc-700/50 text-zinc-400 hover:text-zinc-200"
+                                >
+                                  <MoreVertical className="h-4 w-4" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent 
+                                align="end" 
+                                className="w-40 bg-zinc-900 border-zinc-800"
+                                onCloseAutoFocus={(e) => e.preventDefault()}
+                              >
+                                <DropdownMenuItem 
+                                  onClick={() => {
+                                    setSettingsModalApp(app)
+                                    setOpenMenuAppId(null)
+                                  }}
+                                  className="text-zinc-300 focus:text-zinc-100 focus:bg-zinc-800 cursor-pointer"
+                                >
+                                  <Settings className="h-4 w-4 mr-2" />
+                                  App settings
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
                     )
                   })}
                 </div>
               )}
             </div>
           )}
+
         </div>
       </ScrollArea>
     </div>
+
+      {/* App Settings Modal */}
+      {settingsModalApp && (
+        <AppSettingsModal
+          app={settingsModalApp}
+          customization={getAppCustomization(settingsModalApp.id)}
+          isOpen={!!settingsModalApp}
+          onClose={() => setSettingsModalApp(null)}
+          onSave={handleAppSettingsSave}
+          accentColor={guild.accentColor}
+        />
+      )}
+    </>
   )
 }

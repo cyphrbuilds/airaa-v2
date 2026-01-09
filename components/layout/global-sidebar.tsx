@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Compass, Trophy, Medal, Plus, User, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { guilds, currentUser } from '@/lib/mock-data'
+import { useAuth } from '@/lib/auth-context'
+import { guilds } from '@/lib/mock-data'
 import {
   Tooltip,
   TooltipContent,
@@ -25,6 +26,7 @@ const navItems = [
 
 export function GlobalSidebar() {
   const pathname = usePathname()
+  const { user } = useAuth()
   const [isCollapsed, setIsCollapsed] = useState(true)
 
   // Load collapsed state from localStorage
@@ -43,7 +45,7 @@ export function GlobalSidebar() {
   }
   
   const joinedGuilds = guilds.filter(g => 
-    currentUser.joinedGuilds.includes(g.id)
+    user.joinedGuilds.includes(g.id)
   ).slice(0, 7)
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + '/')
@@ -239,7 +241,7 @@ export function GlobalSidebar() {
                 )}
               >
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src={currentUser.avatar} alt={currentUser.username} />
+                  <AvatarImage src={user.avatar} alt={user.username} />
                   <AvatarFallback className="bg-zinc-800">
                     <User className="h-5 w-5 text-zinc-400" />
                   </AvatarFallback>
@@ -247,8 +249,8 @@ export function GlobalSidebar() {
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right" className="bg-zinc-900 border-zinc-700">
-              <p className="font-medium">@{currentUser.username}</p>
-              <p className="text-xs text-green-500">${currentUser.walletBalance.toLocaleString()}</p>
+              <p className="font-medium">@{user.username}</p>
+              <p className="text-xs text-green-500">${user.walletBalance.toLocaleString()}</p>
             </TooltipContent>
           </Tooltip>
         ) : (
@@ -265,14 +267,14 @@ export function GlobalSidebar() {
               "h-9 w-9",
               isActive('/profile') && "ring-2 ring-green-500"
             )}>
-              <AvatarImage src={currentUser.avatar} alt={currentUser.username} />
+              <AvatarImage src={user.avatar} alt={user.username} />
               <AvatarFallback className="bg-zinc-800">
                 <User className="h-4 w-4 text-zinc-400" />
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">@{currentUser.username}</p>
-              <p className="text-xs text-green-500">${currentUser.walletBalance.toLocaleString()}</p>
+              <p className="text-sm font-medium truncate">@{user.username}</p>
+              <p className="text-xs text-green-500">${user.walletBalance.toLocaleString()}</p>
             </div>
           </Link>
         )}

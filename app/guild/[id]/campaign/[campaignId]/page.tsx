@@ -15,27 +15,28 @@ import {
   AccordionTrigger 
 } from '@/components/ui/accordion'
 import { Leaderboard } from '@/components/leaderboard'
+import { AppContainer } from '@/components/app-container'
+import { useGuild } from '@/lib/guild-context'
 import { 
   getCampaignById, 
   getCampaignLeaderboard,
   getUserCampaignStats,
   currentUser,
-  getGuildById
 } from '@/lib/mock-data'
 import { formatCurrency, formatNumber, cn } from '@/lib/utils'
-import { CampaignTag, TAG_COLORS } from '@/types'
+import { TAG_COLORS, APP_TYPE_INFO } from '@/types'
 
 export default function CampaignPage() {
   const params = useParams()
   const guildId = params.id as string
   const campaignId = params.campaignId as string
+  const { guild } = useGuild()
   
   const campaign = getCampaignById(campaignId)
-  const guild = getGuildById(guildId)
   const leaderboard = getCampaignLeaderboard(campaignId)
   const userStats = getUserCampaignStats(campaignId)
 
-  if (!campaign || !guild) {
+  if (!campaign) {
     return (
       <div className="flex items-center justify-center h-full">
         <p className="text-zinc-500">Campaign not found</p>
@@ -45,18 +46,29 @@ export default function CampaignPage() {
 
   const budgetProgress = (campaign.paidOut / campaign.totalReward) * 100
   const timeLeft = formatDistanceToNow(campaign.endDate, { addSuffix: false })
+  
+  // Get app info for the campaign type
+  const appTypeKey = campaign.type.toLowerCase() as keyof typeof APP_TYPE_INFO
+  const appInfo = APP_TYPE_INFO[appTypeKey] || { icon: '🏆', color: guild.accentColor }
 
-  return (
-    <div className="p-6">
-      {/* Back Link */}
-      <Link 
-        href={`/guild/${guildId}`}
-        className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-200 mb-6 transition-colors"
-      >
+  const headerActions = (
+    <Link href={`/guild/${guildId}`}>
+      <Button variant="ghost" size="sm" className="gap-2 text-zinc-400 hover:text-zinc-100">
         <ArrowLeft className="h-4 w-4" />
         Back to Guild
-      </Link>
+      </Button>
+    </Link>
+  )
 
+  return (
+    <AppContainer
+      appId={`campaign-${campaignId}`}
+      appName={campaign.name}
+      appIcon={appInfo.icon}
+      appDescription={campaign.description}
+      appColor={appInfo.color}
+      headerActions={headerActions}
+    >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
@@ -262,6 +274,6 @@ export default function CampaignPage() {
           />
         </div>
       </div>
-    </div>
+    </AppContainer>
   )
 }

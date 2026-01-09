@@ -1,61 +1,123 @@
+/**
+ * Authenticated user in the application
+ * Contains profile info, wallet data, and guild memberships
+ */
 export interface User {
+  /** Unique identifier */
   id: string
+  /** Display username */
   username: string
+  /** URL to user's avatar image */
   avatar: string
+  /** User's token/wallet balance in USD */
   walletBalance: number
+  /** Gamification points earned */
   auraPoints: number
+  /** Array of guild IDs the user has joined */
   joinedGuilds: string[]
+  /** Global leaderboard rank (if applicable) */
   rank?: number
+  /** Total earnings across all campaigns */
   totalEarnings?: number
+  /** Number of campaigns completed */
   campaignsCompleted?: number
 }
 
+/** Social media platforms supported for campaigns */
 export type Platform = 'youtube' | 'tiktok' | 'instagram' | 'twitter'
 
+/** Categories for guilds */
 export type GuildCategory = 'DeFi' | 'Gaming' | 'NFTs' | 'DAOs' | 'Infrastructure' | 'Social' | 'Entertainment' | 'Education'
 
+/**
+ * Navigation item in a guild's sidebar section
+ */
 export interface GuildSectionItem {
+  /** Unique identifier */
   id: string
+  /** Display text */
   label: string
+  /** Optional emoji icon */
   emoji?: string
+  /** Navigation path */
   href: string
+  /** Whether to visually highlight this item */
   isHighlighted?: boolean
 }
 
+/**
+ * Section in a guild's sidebar navigation
+ * Groups related navigation items
+ */
 export interface GuildSection {
+  /** Unique identifier */
   id: string
+  /** Section header text */
   name: string
+  /** Optional icon for the section */
   icon?: string
+  /** Whether section can be collapsed */
   isCollapsible?: boolean
+  /** Navigation items in this section */
   items: GuildSectionItem[]
 }
 
+/**
+ * A guild/community in the platform
+ * Contains all configuration and metadata for a community
+ */
 export interface Guild {
+  /** Unique identifier */
   id: string
+  /** Display name */
   name: string
+  /** Description/tagline */
   description: string
+  /** URL to guild icon/logo */
   icon: string
+  /** URL to guild banner image */
   banner: string
+  /** Primary brand color (hex) */
   accentColor: string
+  /** CSS gradient for backgrounds */
   accentGradient: string
+  /** Category for discovery/filtering */
   category: GuildCategory
+  /** Number of currently active campaigns */
   activeCampaigns: number
+  /** Total member count */
   totalMembers: number
+  /** Currently online members */
   onlineMembers: number
+  /** Total rewards distributed in USD */
   totalRewardsDistributed: number
+  /** Whether guild chat is enabled */
   chatEnabled: boolean
+  /** Sidebar navigation sections */
   sections: GuildSection[]
+  /** Whether guild is verified */
   verified: boolean
+  /** Blockchain networks the guild operates on */
   chains?: string[]
 }
 
+/**
+ * Member of a guild with their role and status
+ */
 export interface GuildMember {
+  /** Unique identifier */
   id: string
+  /** Display username */
   username: string
+  /** URL to avatar image */
   avatar: string
+  /** Member's role in the guild */
   role: 'admin' | 'moderator' | 'member'
+  /** Whether member is currently online */
   isOnline: boolean
+  /** Aura points earned in this guild */
   auraPoints: number
+  /** Optional linked Twitter handle */
   twitterHandle?: string
 }
 
@@ -159,7 +221,7 @@ export type AppType = 'infofi' | 'ugc' | 'clipping' | 'mini'
 
 export interface InstalledApp {
   id: string
-  type: AppType
+  type: string  // App slug (e.g., 'infofi', 'faucet', 'affiliate')
   name: string
   icon: string
   description: string
@@ -318,4 +380,221 @@ export const CAMPAIGN_CATEGORY_COLORS: Record<CampaignCategory, string> = {
   'NFT': '#a855f7',
   'Social': '#ec4899',
   'Education': '#14b8a6',
+}
+
+// ============================================
+// App Store Types
+// ============================================
+
+/**
+ * Categories for apps in the App Store
+ * Used to filter and organize distribution tools
+ */
+export type StoreAppCategory = 
+  | 'Virality' 
+  | 'Onchain' 
+  | 'Video' 
+  | 'Airdrops' 
+  | 'Tools' 
+  | 'Dapps'
+
+/** All available app store categories in display order */
+export const STORE_APP_CATEGORIES: StoreAppCategory[] = [
+  'Virality',
+  'Onchain',
+  'Video',
+  'Airdrops',
+  'Tools',
+  'Dapps'
+]
+
+/** Color mapping for each app store category (used in badges and UI accents) */
+export const STORE_APP_CATEGORY_COLORS: Record<StoreAppCategory, string> = {
+  'Virality': '#22c55e',
+  'Onchain': '#3b82f6',
+  'Video': '#ec4899',
+  'Airdrops': '#f97316',
+  'Tools': '#8b5cf6',
+  'Dapps': '#14b8a6',
+}
+
+/**
+ * Developer information for an app in the store
+ */
+export interface StoreAppDeveloper {
+  /** Display name of the developer/company */
+  name: string
+  /** URL to the developer's logo/avatar */
+  icon: string
+  /** Whether the developer is verified by the platform */
+  verified: boolean
+}
+
+/**
+ * Usage statistics for an app in the store
+ */
+export interface StoreAppStats {
+  /** Total number of reviews */
+  reviews: number
+  /** Average rating (1-5 scale) */
+  rating: number
+  /** Number of installs in the last 7 days */
+  weeklyInstalls: number
+  /** Total installs across all time */
+  totalInstalls: number
+  /** Number of unique active users in the last 30 days */
+  monthlyActiveUsers: number
+}
+
+/**
+ * App available in the App Store
+ * Represents a distribution tool that guilds can install
+ */
+export interface StoreApp {
+  /** Unique identifier */
+  id: string
+  /** URL-friendly identifier (e.g., 'infofi', 'faucet') */
+  slug: string
+  /** Display name */
+  name: string
+  /** URL to the app's icon/logo */
+  icon: string
+  /** Brief description shown on cards (~50-100 chars) */
+  shortDescription: string
+  /** Full description shown on detail page */
+  fullDescription: string
+  /** Category for filtering */
+  category: StoreAppCategory
+  /** Developer info */
+  developer: StoreAppDeveloper
+  /** Usage statistics */
+  stats: StoreAppStats
+  /** URLs to screenshot images for the detail page */
+  screenshots: string[]
+  /** Key features as bullet points */
+  features: string[]
+  /** Theme color for UI accents */
+  color: string
+  /** Whether the app is free to use */
+  isFree: boolean
+  /** Flag for newly released apps (shows badge) */
+  isNew?: boolean
+  /** Flag for featured apps (higher visibility) */
+  isFeatured?: boolean
+}
+
+/**
+ * Record of an app installed in a guild
+ * Tracks installation metadata and any customizations
+ */
+export interface GuildAppInstallation {
+  /** ID of the installed app (references StoreApp.id) */
+  appId: string
+  /** ID of the guild where installed */
+  guildId: string
+  /** When the app was installed */
+  installedAt: Date
+  /** User ID of who installed the app */
+  installedBy: string
+  /** Guild-specific custom name override */
+  customName?: string
+  /** Guild-specific custom icon override */
+  customIcon?: string
+  /** Guild-specific custom description override */
+  customDescription?: string
+}
+
+// ============================================
+// Support Chat Types
+// ============================================
+
+/**
+ * Status of a support conversation
+ * - 'active': Ongoing conversation, may have unread messages
+ * - 'resolved': Conversation marked as resolved by admin
+ */
+export type SupportConversationStatus = 'active' | 'resolved'
+
+/**
+ * A support conversation between a guild member and admins
+ * 
+ * Each member can have one conversation per guild. Admins can view
+ * and respond to all conversations in their guild's support inbox.
+ * 
+ * @example
+ * ```ts
+ * const conversation: SupportConversation = {
+ *   id: 'conv-1',
+ *   guildId: 'guild-1',
+ *   memberId: 'user-2',
+ *   memberUsername: 'alice_crypto',
+ *   memberAvatar: 'https://...',
+ *   lastMessage: 'Thanks for the help!',
+ *   lastMessageAt: new Date(),
+ *   unreadCount: 0,
+ *   status: 'active'
+ * }
+ * ```
+ */
+export interface SupportConversation {
+  /** Unique identifier for the conversation */
+  id: string
+  /** Guild this conversation belongs to */
+  guildId: string
+  /** ID of the member who initiated the conversation */
+  memberId: string
+  /** Display name of the member (cached for list display) */
+  memberUsername: string
+  /** Avatar URL of the member (cached for list display) */
+  memberAvatar: string
+  /** Preview of the most recent message */
+  lastMessage: string
+  /** Timestamp of the most recent message */
+  lastMessageAt: Date
+  /** Number of unread messages (for admin inbox) */
+  unreadCount: number
+  /** Current status of the conversation */
+  status: SupportConversationStatus
+}
+
+/**
+ * A single message within a support conversation
+ * 
+ * Messages can be sent by either the member or an admin.
+ * The senderType field determines the UI styling and alignment.
+ * 
+ * @example
+ * ```ts
+ * const message: SupportMessage = {
+ *   id: 'msg-1',
+ *   conversationId: 'conv-1',
+ *   senderId: 'user-2',
+ *   senderUsername: 'alice_crypto',
+ *   senderAvatar: 'https://...',
+ *   senderType: 'member',
+ *   content: 'Hi, I have a question about the campaign.',
+ *   timestamp: new Date(),
+ *   isRead: true
+ * }
+ * ```
+ */
+export interface SupportMessage {
+  /** Unique identifier for the message */
+  id: string
+  /** ID of the conversation this message belongs to */
+  conversationId: string
+  /** ID of the user who sent the message */
+  senderId: string
+  /** Display name of the sender */
+  senderUsername: string
+  /** Avatar URL of the sender */
+  senderAvatar: string
+  /** Whether sender is a 'member' or 'admin' (affects UI styling) */
+  senderType: 'member' | 'admin'
+  /** The message content */
+  content: string
+  /** When the message was sent */
+  timestamp: Date
+  /** Whether the message has been read by the recipient */
+  isRead: boolean
 }

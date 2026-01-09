@@ -16,7 +16,11 @@ import {
   InstalledApp,
   TwitterPost,
   CampaignType,
-  ChatMessage
+  ChatMessage,
+  StoreApp,
+  GuildAppInstallation,
+  SupportConversation,
+  SupportMessage
 } from '@/types'
 
 // Current logged-in user (mock auth)
@@ -1191,4 +1195,1036 @@ export function getGuildChatMessages(guildId: string): ChatMessage[] {
 // Helper to get a member by ID (useful for mentions)
 export function getMemberById(memberId: string): GuildMember | undefined {
   return guildMembers.find(m => m.id === memberId)
+}
+
+// ============================================
+// App Store Data
+// ============================================
+
+export const storeApps: StoreApp[] = [
+  // ===== VIRALITY CATEGORY =====
+  {
+    id: 'app-infofi',
+    slug: 'infofi',
+    name: 'InfoFi',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=infofi&backgroundColor=22c55e&shape1Color=16a34a&shape2Color=15803d',
+    shortDescription: 'Drive education-based viral reach through creator campaigns.',
+    fullDescription: `InfoFi enables guilds to run educational content campaigns that reward creators for producing high-quality explainer content about your protocol or product.
+
+Create live chat rooms where members can talk, share feedback, and stay engaged.
+
+Key features:
+• Real-time content tracking with engagement metrics
+• AI-powered content quality scoring
+• Multi-platform support (YouTube, Twitter, TikTok)
+• Customizable reward tiers based on reach and quality
+• Automated payout distribution
+
+Perfect for protocols looking to educate their community and drive organic awareness through authentic creator content.`,
+    category: 'Virality',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 47,
+      rating: 4.8,
+      weeklyInstalls: 5150,
+      totalInstalls: 42800,
+      monthlyActiveUsers: 267600
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Real-time content tracking with engagement metrics',
+      'AI-powered content quality scoring',
+      'Multi-platform support (YouTube, Twitter, TikTok)',
+      'Customizable reward tiers based on reach and quality',
+      'Automated payout distribution'
+    ],
+    color: '#22c55e',
+    isFree: true,
+    isFeatured: true
+  },
+  {
+    id: 'app-faucet',
+    slug: 'faucet',
+    name: 'Faucet',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=faucet&backgroundColor=06b6d4&shape1Color=0891b2&shape2Color=0e7490',
+    shortDescription: 'Distribute tokens to verified community members.',
+    fullDescription: `Faucet allows guilds to distribute tokens to verified community members as rewards for completing tasks, engagement, or as part of community growth initiatives.
+
+Key features:
+• Sybil-resistant verification with multiple identity providers
+• Configurable claim limits and cooldown periods
+• Multi-token support across EVM chains
+• Integration with social verification
+• Detailed analytics on distribution patterns
+
+Ideal for onboarding new users and incentivizing early community participation.`,
+    category: 'Virality',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 23,
+      rating: 4.5,
+      weeklyInstalls: 2340,
+      totalInstalls: 18500,
+      monthlyActiveUsers: 89000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Sybil-resistant verification with multiple identity providers',
+      'Configurable claim limits and cooldown periods',
+      'Multi-token support across EVM chains',
+      'Integration with social verification',
+      'Detailed analytics on distribution patterns'
+    ],
+    color: '#06b6d4',
+    isFree: true,
+    isNew: true
+  },
+  {
+    id: 'app-affiliate',
+    slug: 'affiliate',
+    name: 'Affiliate',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=affiliate&backgroundColor=f59e0b&shape1Color=d97706&shape2Color=b45309',
+    shortDescription: 'Track referral links and reward affiliates automatically.',
+    fullDescription: `Affiliate enables guilds to create trackable referral programs with custom commission structures and automated payouts.
+
+Key features:
+• Unique referral link generation
+• Real-time conversion tracking
+• Tiered commission structures
+• Automated USDC/token payouts
+• Fraud detection and prevention
+
+Perfect for growing your protocol through incentivized word-of-mouth marketing.`,
+    category: 'Virality',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 31,
+      rating: 4.6,
+      weeklyInstalls: 1890,
+      totalInstalls: 24300,
+      monthlyActiveUsers: 156000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Unique referral link generation',
+      'Real-time conversion tracking',
+      'Tiered commission structures',
+      'Automated USDC/token payouts',
+      'Fraud detection and prevention'
+    ],
+    color: '#f59e0b',
+    isFree: true
+  },
+  {
+    id: 'app-referral',
+    slug: 'referral',
+    name: 'Referral',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=referral&backgroundColor=8b5cf6&shape1Color=7c3aed&shape2Color=6d28d9',
+    shortDescription: 'Create invite programs with milestone-based rewards.',
+    fullDescription: `Referral helps guilds build viral growth through gamified invite programs with milestone rewards and leaderboards.
+
+Key features:
+• Gamified milestone system
+• Real-time invite leaderboards
+• Custom reward tiers
+• Social sharing integrations
+• Anti-gaming protections
+
+Drive exponential growth through your existing community.`,
+    category: 'Virality',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 18,
+      rating: 4.4,
+      weeklyInstalls: 1245,
+      totalInstalls: 15600,
+      monthlyActiveUsers: 78000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Gamified milestone system',
+      'Real-time invite leaderboards',
+      'Custom reward tiers',
+      'Social sharing integrations',
+      'Anti-gaming protections'
+    ],
+    color: '#8b5cf6',
+    isFree: true
+  },
+
+  // ===== ONCHAIN CATEGORY =====
+  {
+    id: 'app-liquidity',
+    slug: 'liquidity',
+    name: 'Liquidity',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=liquidity&backgroundColor=3b82f6&shape1Color=2563eb&shape2Color=1d4ed8',
+    shortDescription: 'Incentivize liquidity provision with reward campaigns.',
+    fullDescription: `Liquidity enables guilds to run LP incentive programs that reward users for providing liquidity to designated pools.
+
+Key features:
+• Multi-DEX support (Uniswap, Curve, Balancer)
+• Time-weighted reward calculations
+• Boosted rewards for lock-ups
+• Real-time TVL tracking
+• Automated reward distribution
+
+Attract and retain liquidity providers with competitive incentive programs.`,
+    category: 'Onchain',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 56,
+      rating: 4.9,
+      weeklyInstalls: 3420,
+      totalInstalls: 38900,
+      monthlyActiveUsers: 234000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Multi-DEX support (Uniswap, Curve, Balancer)',
+      'Time-weighted reward calculations',
+      'Boosted rewards for lock-ups',
+      'Real-time TVL tracking',
+      'Automated reward distribution'
+    ],
+    color: '#3b82f6',
+    isFree: true,
+    isFeatured: true
+  },
+  {
+    id: 'app-token-holding',
+    slug: 'token-holding',
+    name: 'Token Holding',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=tokenholding&backgroundColor=eab308&shape1Color=ca8a04&shape2Color=a16207',
+    shortDescription: 'Reward long-term holders with tiered incentives.',
+    fullDescription: `Token Holding rewards users who hold your token over time with increasing benefits and exclusive access.
+
+Key features:
+• Snapshot-based balance tracking
+• Tiered reward multipliers
+• Holder leaderboards
+• Exclusive access gating
+• Diamond hands achievements
+
+Build a loyal community of long-term believers.`,
+    category: 'Onchain',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 29,
+      rating: 4.5,
+      weeklyInstalls: 1780,
+      totalInstalls: 21400,
+      monthlyActiveUsers: 145000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Snapshot-based balance tracking',
+      'Tiered reward multipliers',
+      'Holder leaderboards',
+      'Exclusive access gating',
+      'Diamond hands achievements'
+    ],
+    color: '#eab308',
+    isFree: true
+  },
+  {
+    id: 'app-lending',
+    slug: 'lending-borrowing',
+    name: 'Lending/Borrowing',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=lending&backgroundColor=06b6d4&shape1Color=0891b2&shape2Color=0e7490',
+    shortDescription: 'Incentivize DeFi participation in lending protocols.',
+    fullDescription: `Lending/Borrowing rewards users for active participation in supported lending protocols.
+
+Key features:
+• Multi-protocol support (Aave, Compound, Morpho)
+• Supply and borrow tracking
+• Interest rate boosters
+• Health factor monitoring
+• Cross-chain aggregation
+
+Grow protocol TVL through targeted incentive campaigns.`,
+    category: 'Onchain',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 34,
+      rating: 4.7,
+      weeklyInstalls: 2150,
+      totalInstalls: 28700,
+      monthlyActiveUsers: 189000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Multi-protocol support (Aave, Compound, Morpho)',
+      'Supply and borrow tracking',
+      'Interest rate boosters',
+      'Health factor monitoring',
+      'Cross-chain aggregation'
+    ],
+    color: '#06b6d4',
+    isFree: true
+  },
+
+  // ===== VIDEO CATEGORY =====
+  {
+    id: 'app-clipping',
+    slug: 'clipping',
+    name: 'Clipping',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=clipping&backgroundColor=ec4899&shape1Color=db2777&shape2Color=be185d',
+    shortDescription: 'Run video clipping campaigns for viral short-form content.',
+    fullDescription: `Clipping enables guilds to run campaigns that reward creators for turning long-form content into viral short-form clips.
+
+Key features:
+• Source video integration
+• Clip submission and review workflow
+• Engagement tracking across platforms
+• Quality scoring algorithms
+• Batch approval tools
+
+Turn your content library into viral short-form gold.`,
+    category: 'Video',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 67,
+      rating: 4.8,
+      weeklyInstalls: 4280,
+      totalInstalls: 52300,
+      monthlyActiveUsers: 312000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Source video integration',
+      'Clip submission and review workflow',
+      'Engagement tracking across platforms',
+      'Quality scoring algorithms',
+      'Batch approval tools'
+    ],
+    color: '#ec4899',
+    isFree: true,
+    isFeatured: true
+  },
+  {
+    id: 'app-ugc',
+    slug: 'ugc',
+    name: 'UGC',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=ugc&backgroundColor=f97316&shape1Color=ea580c&shape2Color=c2410c',
+    shortDescription: 'Launch user-generated content campaigns at scale.',
+    fullDescription: `UGC empowers guilds to run large-scale user-generated content campaigns with automated tracking and rewards.
+
+Key features:
+• Hashtag and mention tracking
+• Multi-platform aggregation
+• Content moderation tools
+• Performance-based rewards
+• Creator CRM integration
+
+Harness the creativity of your community at scale.`,
+    category: 'Video',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 52,
+      rating: 4.6,
+      weeklyInstalls: 3890,
+      totalInstalls: 45600,
+      monthlyActiveUsers: 278000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1492724441997-5dc865305da7?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1533750349088-cd871a92f312?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Hashtag and mention tracking',
+      'Multi-platform aggregation',
+      'Content moderation tools',
+      'Performance-based rewards',
+      'Creator CRM integration'
+    ],
+    color: '#f97316',
+    isFree: true
+  },
+
+  // ===== AIRDROPS CATEGORY =====
+  {
+    id: 'app-token-airdrop',
+    slug: 'token-airdrop',
+    name: 'Token Airdrop',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=tokenairdrop&backgroundColor=f97316&shape1Color=ea580c&shape2Color=c2410c',
+    shortDescription: 'Distribute ERC-20 tokens to qualified recipients.',
+    fullDescription: `Token Airdrop enables efficient distribution of ERC-20 tokens to qualified community members based on custom criteria.
+
+Key features:
+• CSV import and criteria builder
+• Gas-optimized batch transfers
+• Claim portal with eligibility checker
+• Anti-sybil verification
+• Vesting schedule support
+
+Execute airdrops with precision and security.`,
+    category: 'Airdrops',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 89,
+      rating: 4.9,
+      weeklyInstalls: 5620,
+      totalInstalls: 78400,
+      monthlyActiveUsers: 456000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'CSV import and criteria builder',
+      'Gas-optimized batch transfers',
+      'Claim portal with eligibility checker',
+      'Anti-sybil verification',
+      'Vesting schedule support'
+    ],
+    color: '#f97316',
+    isFree: true,
+    isFeatured: true
+  },
+  {
+    id: 'app-nft-airdrop',
+    slug: 'nft-airdrop',
+    name: 'NFT Airdrop',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=nftairdrop&backgroundColor=a855f7&shape1Color=9333ea&shape2Color=7e22ce',
+    shortDescription: 'Distribute NFTs to your community members.',
+    fullDescription: `NFT Airdrop enables guilds to distribute collectibles and membership NFTs to community members.
+
+Key features:
+• ERC-721 and ERC-1155 support
+• Dynamic metadata generation
+• Claim page with wallet connection
+• Snapshot-based eligibility
+• Reveal mechanics
+
+Reward your community with exclusive digital collectibles.`,
+    category: 'Airdrops',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 41,
+      rating: 4.7,
+      weeklyInstalls: 2890,
+      totalInstalls: 34500,
+      monthlyActiveUsers: 198000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'ERC-721 and ERC-1155 support',
+      'Dynamic metadata generation',
+      'Claim page with wallet connection',
+      'Snapshot-based eligibility',
+      'Reveal mechanics'
+    ],
+    color: '#a855f7',
+    isFree: true,
+    isNew: true
+  },
+
+  // ===== TOOLS CATEGORY =====
+  {
+    id: 'app-outreach',
+    slug: 'outreach',
+    name: 'Outreach',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=outreach&backgroundColor=8b5cf6&shape1Color=7c3aed&shape2Color=6d28d9',
+    shortDescription: 'Run community outreach and engagement campaigns.',
+    fullDescription: `Outreach helps guilds coordinate community outreach efforts with task-based rewards.
+
+Key features:
+• Task board with assignments
+• Social engagement tracking
+• Community ambassador program
+• Progress dashboards
+• Team coordination tools
+
+Mobilize your community for coordinated growth initiatives.`,
+    category: 'Tools',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 25,
+      rating: 4.4,
+      weeklyInstalls: 1560,
+      totalInstalls: 19800,
+      monthlyActiveUsers: 112000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1552581234-26160f608093?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Task board with assignments',
+      'Social engagement tracking',
+      'Community ambassador program',
+      'Progress dashboards',
+      'Team coordination tools'
+    ],
+    color: '#8b5cf6',
+    isFree: true
+  },
+
+  // ===== DAPPS CATEGORY =====
+  {
+    id: 'app-jumper',
+    slug: 'jumper',
+    name: 'Jumper',
+    icon: 'https://img.logo.dev/jumper.exchange?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    shortDescription: 'Incentivize cross-chain bridging through Jumper.',
+    fullDescription: `Jumper integration allows guilds to reward users for bridging assets across chains using the Jumper aggregator.
+
+Key features:
+• Bridge transaction tracking
+• Volume-based rewards
+• Multi-chain support
+• Route optimization insights
+• Leaderboard competitions
+
+Drive cross-chain adoption with targeted incentives.`,
+    category: 'Dapps',
+    developer: {
+      name: 'Jumper',
+      icon: 'https://img.logo.dev/jumper.exchange?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      verified: true
+    },
+    stats: {
+      reviews: 38,
+      rating: 4.6,
+      weeklyInstalls: 2340,
+      totalInstalls: 31200,
+      monthlyActiveUsers: 187000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Bridge transaction tracking',
+      'Volume-based rewards',
+      'Multi-chain support',
+      'Route optimization insights',
+      'Leaderboard competitions'
+    ],
+    color: '#14b8a6',
+    isFree: true
+  },
+  {
+    id: 'app-aave',
+    slug: 'aave',
+    name: 'Aave',
+    icon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    shortDescription: 'Reward Aave protocol participation and engagement.',
+    fullDescription: `Aave integration enables guilds to reward users for lending and borrowing on Aave protocol.
+
+Key features:
+• Supply and borrow tracking
+• GHO stablecoin integration
+• Multi-market support
+• Health factor rewards
+• Protocol governance participation
+
+Incentivize active Aave usage across your community.`,
+    category: 'Dapps',
+    developer: {
+      name: 'Aave',
+      icon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      verified: true
+    },
+    stats: {
+      reviews: 62,
+      rating: 4.8,
+      weeklyInstalls: 3890,
+      totalInstalls: 48700,
+      monthlyActiveUsers: 298000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Supply and borrow tracking',
+      'GHO stablecoin integration',
+      'Multi-market support',
+      'Health factor rewards',
+      'Protocol governance participation'
+    ],
+    color: '#B6509E',
+    isFree: true,
+    isFeatured: true
+  },
+  {
+    id: 'app-polymarket',
+    slug: 'polymarket',
+    name: 'Polymarket',
+    icon: 'https://img.logo.dev/polymarket.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    shortDescription: 'Incentivize prediction market participation.',
+    fullDescription: `Polymarket integration enables guilds to reward users for participating in prediction markets.
+
+Key features:
+• Position tracking
+• Volume-based rewards
+• Market creation incentives
+• Accuracy leaderboards
+• Event-based campaigns
+
+Engage your community through prediction markets.`,
+    category: 'Dapps',
+    developer: {
+      name: 'Polymarket',
+      icon: 'https://img.logo.dev/polymarket.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      verified: true
+    },
+    stats: {
+      reviews: 28,
+      rating: 4.5,
+      weeklyInstalls: 1780,
+      totalInstalls: 22400,
+      monthlyActiveUsers: 134000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Position tracking',
+      'Volume-based rewards',
+      'Market creation incentives',
+      'Accuracy leaderboards',
+      'Event-based campaigns'
+    ],
+    color: '#3b82f6',
+    isFree: true
+  }
+]
+
+// Helper functions for store apps
+export function getStoreApps(): StoreApp[] {
+  return storeApps
+}
+
+export function getStoreAppBySlug(slug: string): StoreApp | undefined {
+  return storeApps.find(app => app.slug === slug)
+}
+
+export function getStoreAppById(id: string): StoreApp | undefined {
+  return storeApps.find(app => app.id === id)
+}
+
+export function getStoreAppsByCategory(category: string): StoreApp[] {
+  if (category === 'All') return storeApps
+  return storeApps.filter(app => app.category === category)
+}
+
+export function getFeaturedStoreApps(): StoreApp[] {
+  return storeApps.filter(app => app.isFeatured)
+}
+
+export function getNewStoreApps(): StoreApp[] {
+  return storeApps.filter(app => app.isNew)
+}
+
+// ============================================
+// Support Chat Data
+// ============================================
+
+// Support conversations for guild-1 (Uniswap)
+export const supportConversations: SupportConversation[] = [
+  {
+    id: 'conv-1',
+    guildId: 'guild-1',
+    memberId: 'user-3',
+    memberUsername: 'content_king',
+    memberAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=contentking',
+    lastMessage: 'Thanks for the help! That makes sense now.',
+    lastMessageAt: new Date(Date.now() - 1000 * 60 * 30), // 30 min ago
+    unreadCount: 0,
+    status: 'active'
+  },
+  {
+    id: 'conv-2',
+    guildId: 'guild-1',
+    memberId: 'user-4',
+    memberUsername: 'tiktok_pro',
+    memberAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=tiktokpro',
+    lastMessage: 'When will the new campaign go live?',
+    lastMessageAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+    unreadCount: 1,
+    status: 'active'
+  },
+  {
+    id: 'conv-3',
+    guildId: 'guild-1',
+    memberId: 'user-5',
+    memberUsername: 'shorts_master',
+    memberAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=shortsmaster',
+    lastMessage: 'I submitted my video but it shows pending',
+    lastMessageAt: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
+    unreadCount: 2,
+    status: 'active'
+  },
+  {
+    id: 'conv-4',
+    guildId: 'guild-1',
+    memberId: 'user-6',
+    memberUsername: 'viral_maker',
+    memberAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=viralmaker',
+    lastMessage: 'Got it, I\'ll update my content accordingly.',
+    lastMessageAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+    unreadCount: 0,
+    status: 'resolved'
+  },
+  {
+    id: 'conv-5',
+    guildId: 'guild-1',
+    memberId: 'user-8',
+    memberUsername: 'clip_guru',
+    memberAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipguru',
+    lastMessage: 'Perfect, thank you for the quick response!',
+    lastMessageAt: new Date(Date.now() - 1000 * 60 * 60 * 48), // 2 days ago
+    unreadCount: 0,
+    status: 'resolved'
+  }
+]
+
+// Support messages - organized by conversation
+export const supportMessages: SupportMessage[] = [
+  // Conversation 1 - content_king
+  {
+    id: 'smsg-1-1',
+    conversationId: 'conv-1',
+    senderId: 'user-3',
+    senderUsername: 'content_king',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=contentking',
+    senderType: 'member',
+    content: 'Hey! I have a question about the v4 Hooks campaign requirements.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60), // 1 hour ago
+    isRead: true
+  },
+  {
+    id: 'smsg-1-2',
+    conversationId: 'conv-1',
+    senderId: 'user-1',
+    senderUsername: 'clipmaster_pro',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipmaster',
+    senderType: 'admin',
+    content: 'Hi! Sure, happy to help. What would you like to know about the campaign?',
+    timestamp: new Date(Date.now() - 1000 * 60 * 55), // 55 min ago
+    isRead: true
+  },
+  {
+    id: 'smsg-1-3',
+    conversationId: 'conv-1',
+    senderId: 'user-3',
+    senderUsername: 'content_king',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=contentking',
+    senderType: 'member',
+    content: 'Do I need to cover all the hook types or can I focus on just one?',
+    timestamp: new Date(Date.now() - 1000 * 60 * 50), // 50 min ago
+    isRead: true
+  },
+  {
+    id: 'smsg-1-4',
+    conversationId: 'conv-1',
+    senderId: 'user-1',
+    senderUsername: 'clipmaster_pro',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipmaster',
+    senderType: 'admin',
+    content: 'Great question! You can definitely focus on just one hook type. In fact, deep dives into specific hooks tend to perform really well. The key is making it educational and accessible.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 40), // 40 min ago
+    isRead: true
+  },
+  {
+    id: 'smsg-1-5',
+    conversationId: 'conv-1',
+    senderId: 'user-3',
+    senderUsername: 'content_king',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=contentking',
+    senderType: 'member',
+    content: 'Thanks for the help! That makes sense now.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 30), // 30 min ago
+    isRead: true
+  },
+  
+  // Conversation 2 - tiktok_pro
+  {
+    id: 'smsg-2-1',
+    conversationId: 'conv-2',
+    senderId: 'user-4',
+    senderUsername: 'tiktok_pro',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=tiktokpro',
+    senderType: 'member',
+    content: 'Hi there! I heard there\'s a new TikTok-focused campaign coming up?',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 3), // 3 hours ago
+    isRead: true
+  },
+  {
+    id: 'smsg-2-2',
+    conversationId: 'conv-2',
+    senderId: 'user-1',
+    senderUsername: 'clipmaster_pro',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipmaster',
+    senderType: 'admin',
+    content: 'Yes! We\'re planning a new short-form content campaign. Stay tuned for the announcement!',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2.5), // 2.5 hours ago
+    isRead: true
+  },
+  {
+    id: 'smsg-2-3',
+    conversationId: 'conv-2',
+    senderId: 'user-4',
+    senderUsername: 'tiktok_pro',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=tiktokpro',
+    senderType: 'member',
+    content: 'When will the new campaign go live?',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
+    isRead: false
+  },
+  
+  // Conversation 3 - shorts_master
+  {
+    id: 'smsg-3-1',
+    conversationId: 'conv-3',
+    senderId: 'user-5',
+    senderUsername: 'shorts_master',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=shortsmaster',
+    senderType: 'member',
+    content: 'Hello! I submitted my video for the First Swap Tutorial campaign.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 6), // 6 hours ago
+    isRead: true
+  },
+  {
+    id: 'smsg-3-2',
+    conversationId: 'conv-3',
+    senderId: 'user-5',
+    senderUsername: 'shorts_master',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=shortsmaster',
+    senderType: 'member',
+    content: 'I submitted my video but it shows pending',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
+    isRead: false
+  },
+  
+  // Conversation 4 - viral_maker
+  {
+    id: 'smsg-4-1',
+    conversationId: 'conv-4',
+    senderId: 'user-6',
+    senderUsername: 'viral_maker',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=viralmaker',
+    senderType: 'member',
+    content: 'Quick question - can I use music in my Uniswap explainer video?',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 25), // 25 hours ago
+    isRead: true
+  },
+  {
+    id: 'smsg-4-2',
+    conversationId: 'conv-4',
+    senderId: 'user-1',
+    senderUsername: 'clipmaster_pro',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipmaster',
+    senderType: 'admin',
+    content: 'Yes, but make sure to use royalty-free music or music you have rights to. We recommend checking the platform\'s music library for safe options.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24.5), // 24.5 hours ago
+    isRead: true
+  },
+  {
+    id: 'smsg-4-3',
+    conversationId: 'conv-4',
+    senderId: 'user-6',
+    senderUsername: 'viral_maker',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=viralmaker',
+    senderType: 'member',
+    content: 'Got it, I\'ll update my content accordingly.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 24 hours ago
+    isRead: true
+  },
+  
+  // Conversation 5 - clip_guru
+  {
+    id: 'smsg-5-1',
+    conversationId: 'conv-5',
+    senderId: 'user-8',
+    senderUsername: 'clip_guru',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipguru',
+    senderType: 'member',
+    content: 'Is there a minimum video length requirement for the clipping campaign?',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 50), // 50 hours ago
+    isRead: true
+  },
+  {
+    id: 'smsg-5-2',
+    conversationId: 'conv-5',
+    senderId: 'user-1',
+    senderUsername: 'clipmaster_pro',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipmaster',
+    senderType: 'admin',
+    content: 'The minimum is 30 seconds, but we recommend 60-90 seconds for optimal engagement. Anything over 3 minutes might be too long for this particular campaign.',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 49), // 49 hours ago
+    isRead: true
+  },
+  {
+    id: 'smsg-5-3',
+    conversationId: 'conv-5',
+    senderId: 'user-8',
+    senderUsername: 'clip_guru',
+    senderAvatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipguru',
+    senderType: 'member',
+    content: 'Perfect, thank you for the quick response!',
+    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 48 hours ago
+    isRead: true
+  }
+]
+
+// Helper functions for support chat
+export function getSupportConversations(guildId: string): SupportConversation[] {
+  return supportConversations.filter(conv => conv.guildId === guildId)
+}
+
+export function getSupportConversationById(conversationId: string): SupportConversation | undefined {
+  return supportConversations.find(conv => conv.id === conversationId)
+}
+
+export function getSupportConversationForMember(guildId: string, memberId: string): SupportConversation | undefined {
+  return supportConversations.find(conv => conv.guildId === guildId && conv.memberId === memberId)
+}
+
+export function getSupportMessages(conversationId: string): SupportMessage[] {
+  return supportMessages.filter(msg => msg.conversationId === conversationId)
+}
+
+export function getOrCreateSupportConversation(
+  guildId: string,
+  memberId: string,
+  memberUsername?: string,
+  memberAvatar?: string
+): SupportConversation {
+  const existing = getSupportConversationForMember(guildId, memberId)
+  if (existing) return existing
+  
+  // Get member info if not provided
+  const member = guildMembers.find(m => m.id === memberId)
+  
+  // Create a new conversation
+  return {
+    id: `conv-new-${memberId}`,
+    guildId,
+    memberId,
+    memberUsername: memberUsername || member?.username || 'Unknown',
+    memberAvatar: memberAvatar || member?.avatar || 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=unknown',
+    lastMessage: '',
+    lastMessageAt: new Date(),
+    unreadCount: 0,
+    status: 'active'
+  }
+}
+
+/**
+ * Add a new support message to a conversation
+ * In a real app, this would POST to an API
+ */
+export function addSupportMessage(
+  conversationId: string,
+  senderId: string,
+  senderUsername: string,
+  senderAvatar: string,
+  senderType: 'member' | 'admin',
+  content: string
+): SupportMessage {
+  const newMessage: SupportMessage = {
+    id: `smsg-${Date.now()}`,
+    conversationId,
+    senderId,
+    senderUsername,
+    senderAvatar,
+    senderType,
+    content,
+    timestamp: new Date(),
+    isRead: false
+  }
+  
+  // In a real app, this would update the database
+  // For now, just return the message (mock data is static)
+  return newMessage
+}
+
+/**
+ * Mark all messages in a conversation as read
+ * In a real app, this would PUT to an API
+ */
+export function markConversationAsRead(conversationId: string): void {
+  // In a real app, this would update the database
+  // For mock purposes, this is a no-op since we don't persist state
 }

@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent } from '@/components/ui/card'
-import { leaderboardUsers, leaderboardGuilds, currentUser } from '@/lib/mock-data'
+import { useAuth } from '@/lib/auth-context'
+import { leaderboardUsers, leaderboardGuilds } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 type TimeFilter = 'all' | 'month' | 'week'
@@ -33,11 +34,12 @@ function getRankBg(rank: number) {
 }
 
 export default function LeaderboardPage() {
+  const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('creators')
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all')
 
   // Find current user's rank
-  const userRank = leaderboardUsers.find(u => u.userId === currentUser.id)
+  const userRank = leaderboardUsers.find(u => u.userId === user.id)
 
   return (
     <div className="min-h-screen">
@@ -103,9 +105,9 @@ export default function LeaderboardPage() {
           <TabsContent value="creators">
             {/* Top 3 Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              {leaderboardUsers.slice(0, 3).map((user, index) => (
+              {leaderboardUsers.slice(0, 3).map((topUser, index) => (
                 <Card 
-                  key={user.userId}
+                  key={topUser.userId}
                   className={cn(
                     "border-zinc-800 bg-transparent overflow-hidden",
                     index === 0 && "md:order-2 ring-2 ring-yellow-500/30",
@@ -115,26 +117,26 @@ export default function LeaderboardPage() {
                 >
                   <CardContent className="p-6 text-center">
                     <div className="flex justify-center mb-4">
-                      {getRankIcon(user.rank)}
+                      {getRankIcon(topUser.rank)}
                     </div>
                     <Avatar className={cn(
                       "h-20 w-20 mx-auto mb-4",
-                      user.rank === 1 && "ring-4 ring-yellow-500/50",
-                      user.rank === 2 && "ring-4 ring-zinc-400/50",
-                      user.rank === 3 && "ring-4 ring-amber-600/50"
+                      topUser.rank === 1 && "ring-4 ring-yellow-500/50",
+                      topUser.rank === 2 && "ring-4 ring-zinc-400/50",
+                      topUser.rank === 3 && "ring-4 ring-amber-600/50"
                     )}>
-                      <AvatarImage src={user.avatar} alt={user.username} />
+                      <AvatarImage src={topUser.avatar} alt={topUser.username} />
                       <AvatarFallback className="bg-zinc-800 text-xl">
-                        {user.username[0].toUpperCase()}
+                        {topUser.username[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <h3 className="font-semibold text-zinc-100 mb-1">@{user.username}</h3>
+                    <h3 className="font-semibold text-zinc-100 mb-1">@{topUser.username}</h3>
                     <p className="text-2xl font-bold text-green-500 mb-2">
-                      ${user.totalEarnings.toLocaleString()}
+                      ${topUser.totalEarnings.toLocaleString()}
                     </p>
                     <div className="flex items-center justify-center gap-4 text-sm text-zinc-400">
-                      <span>{user.campaignsCompleted} campaigns</span>
-                      <span>{user.score.toLocaleString()} pts</span>
+                      <span>{topUser.campaignsCompleted} campaigns</span>
+                      <span>{topUser.score.toLocaleString()} pts</span>
                     </div>
                   </CardContent>
                 </Card>
@@ -156,31 +158,31 @@ export default function LeaderboardPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {leaderboardUsers.map((user) => {
-                        const isCurrentUser = user.userId === currentUser.id
+                      {leaderboardUsers.map((leaderboardUser) => {
+                        const isCurrentUser = leaderboardUser.userId === user.id
                         
                         return (
                           <tr 
-                            key={user.userId}
+                            key={leaderboardUser.userId}
                             className={cn(
                               "border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30",
-                              getRankBg(user.rank),
+                              getRankBg(leaderboardUser.rank),
                               isCurrentUser && "bg-green-500/10 border-l-4 border-l-green-500"
                             )}
                           >
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-2">
-                                {getRankIcon(user.rank) || (
-                                  <span className="text-zinc-500 font-medium">#{user.rank}</span>
+                                {getRankIcon(leaderboardUser.rank) || (
+                                  <span className="text-zinc-500 font-medium">#{leaderboardUser.rank}</span>
                                 )}
                               </div>
                             </td>
                             <td className="py-4 px-4">
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10">
-                                  <AvatarImage src={user.avatar} alt={user.username} />
+                                  <AvatarImage src={leaderboardUser.avatar} alt={leaderboardUser.username} />
                                   <AvatarFallback className="bg-zinc-800">
-                                    {user.username[0].toUpperCase()}
+                                    {leaderboardUser.username[0].toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
@@ -188,7 +190,7 @@ export default function LeaderboardPage() {
                                     "font-medium",
                                     isCurrentUser ? "text-green-500" : "text-zinc-200"
                                   )}>
-                                    @{user.username}
+                                    @{leaderboardUser.username}
                                     {isCurrentUser && <span className="text-xs text-zinc-500 ml-2">(You)</span>}
                                   </p>
                                 </div>
@@ -196,14 +198,14 @@ export default function LeaderboardPage() {
                             </td>
                             <td className="py-4 px-4 text-right">
                               <span className="font-semibold text-green-500">
-                                ${user.totalEarnings.toLocaleString()}
+                                ${leaderboardUser.totalEarnings.toLocaleString()}
                               </span>
                             </td>
                             <td className="py-4 px-4 text-right text-zinc-400">
-                              {user.campaignsCompleted}
+                              {leaderboardUser.campaignsCompleted}
                             </td>
                             <td className="py-4 px-4 text-right text-zinc-400">
-                              {user.score.toLocaleString()}
+                              {leaderboardUser.score.toLocaleString()}
                             </td>
                           </tr>
                         )

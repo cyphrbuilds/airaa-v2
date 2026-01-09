@@ -6,10 +6,12 @@ import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { AvatarStack } from '@/components/ui/avatar-stack'
+import { AppContainer } from '@/components/app-container'
+import { useGuild } from '@/lib/guild-context'
 import { 
-  getGuildById, 
   getCampaignsByType,
   guildMembers,
+  getGuildInstalledApps,
 } from '@/lib/mock-data'
 import { Campaign, APP_TYPE_INFO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
@@ -17,18 +19,22 @@ import { formatCurrency } from '@/lib/utils'
 export default function InfoFiAppPage() {
   const params = useParams()
   const guildId = params.id as string
+  const { guild, getCustomizedApp } = useGuild()
   
-  const guild = getGuildById(guildId)
   const allCampaigns = getCampaignsByType(guildId, 'InfoFi')
   
   const activeCampaigns = allCampaigns.filter(c => c.status === 'active')
   const totalCampaigns = allCampaigns.length
 
-  const appInfo = APP_TYPE_INFO['infofi']
-
-  if (!guild) {
-    return null
-  }
+  // Get the installed app and apply customizations
+  const installedApps = getGuildInstalledApps(guildId)
+  const infofiApp = installedApps.find(app => app.type === 'infofi')
+  const defaultAppInfo = APP_TYPE_INFO['infofi']
+  
+  // Get customized app data if available
+  const appInfo = infofiApp 
+    ? getCustomizedApp(infofiApp) 
+    : { ...defaultAppInfo, id: 'infofi' }
 
   // Get sample avatars for participant stack
   const participantAvatars = guildMembers.slice(0, 4).map(m => ({ src: m.avatar, alt: m.username }))
@@ -102,7 +108,7 @@ export default function InfoFiAppPage() {
           <div className="flex items-center justify-between py-3 border-t border-zinc-800/50">
             <span className="text-sm text-zinc-500">Your Rank</span>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold" style={{ color: guild?.accentColor || '#22c55e' }}>
+              <span className="text-sm font-bold" style={{ color: guild.accentColor }}>
                 #42
               </span>
               <span className="text-xs text-zinc-500">of 1,284</span>
@@ -110,10 +116,10 @@ export default function InfoFiAppPage() {
           </div>
 
           {/* View Button */}
-          <Link href={`/guild/${guildId}/campaign/${campaign.id}`}>
+          <Link href={`/guild/${guildId}/apps/infofi/${campaign.id}`}>
             <Button 
               className="w-full mt-4 text-white font-semibold"
-              style={{ backgroundColor: guild?.accentColor || '#22c55e' }}
+              style={{ backgroundColor: guild.accentColor }}
             >
               View
             </Button>
@@ -124,57 +130,42 @@ export default function InfoFiAppPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* App Header - Fixed */}
-      <div className="sticky top-0 z-10 bg-[#111111] border-b border-zinc-800/50">
-        <div className="px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div 
-              className="h-10 w-10 rounded-lg flex items-center justify-center text-xl"
-              style={{ backgroundColor: `${appInfo.color}20` }}
-            >
-              {appInfo.icon}
-            </div>
-            <div>
-              <h1 className="text-lg font-bold text-zinc-100">{appInfo.name}</h1>
-              <p className="text-sm text-zinc-500">{appInfo.description}</p>
-            </div>
-          </div>
-        </div>
+    <AppContainer
+      appId="infofi"
+      appName={appInfo.name}
+      appIcon={appInfo.icon}
+      appDescription={appInfo.description}
+      appColor={infofiApp?.color || defaultAppInfo.color}
+    >
+      {/* Campaigns Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold text-white">Campaigns</h2>
+        <span className="text-sm text-zinc-500">
+          {activeCampaigns.length} active of {totalCampaigns} total
+        </span>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        {/* Campaigns Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white">Campaigns</h2>
-          <span className="text-sm text-zinc-500">
-            {activeCampaigns.length} of {totalCampaigns} campaigns
-          </span>
+      {/* Campaign Grid */}
+      {allCampaigns.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          {allCampaigns.map((campaign) => (
+            <CampaignCard key={campaign.id} campaign={campaign} />
+          ))}
         </div>
-
-        {/* Campaign Grid */}
-        {allCampaigns.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {allCampaigns.map((campaign) => (
-              <CampaignCard key={campaign.id} campaign={campaign} />
-            ))}
+      ) : (
+        <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-12 text-center">
+          <div 
+            className="h-16 w-16 rounded-xl flex items-center justify-center text-4xl mx-auto mb-4"
+            style={{ backgroundColor: `${infofiApp?.color || defaultAppInfo.color}20` }}
+          >
+            {appInfo.icon}
           </div>
-        ) : (
-          <div className="rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-12 text-center">
-            <div 
-              className="h-16 w-16 rounded-xl flex items-center justify-center text-4xl mx-auto mb-4"
-              style={{ backgroundColor: `${appInfo.color}20` }}
-            >
-              {appInfo.icon}
-            </div>
-            <h3 className="text-lg font-semibold text-zinc-200 mb-2">No Campaigns Yet</h3>
-            <p className="text-zinc-500 max-w-sm mx-auto">
-              There are no InfoFi campaigns in this guild yet. Check back later!
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
+          <h3 className="text-lg font-semibold text-zinc-200 mb-2">No Campaigns Yet</h3>
+          <p className="text-zinc-500 max-w-sm mx-auto">
+            There are no {appInfo.name} campaigns in this guild yet. Check back later!
+          </p>
+        </div>
+      )}
+    </AppContainer>
   )
 }

@@ -5,24 +5,28 @@ import Link from 'next/link'
 import { ArrowLeft, Trophy, Users, Clock, Sparkles } from 'lucide-react'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { AppContainer } from '@/components/app-container'
+import { useGuild } from '@/lib/guild-context'
 import { 
-  getGuildById, 
   getCampaignById,
   getCampaignLeaderboard,
 } from '@/lib/mock-data'
 import { formatCurrency } from '@/lib/utils'
+import { APP_TYPE_INFO } from '@/types'
 
 export default function InfoFiCampaignDetailPage() {
   const params = useParams()
   const guildId = params.id as string
   const campaignId = params.campaignId as string
+  const { guild } = useGuild()
   
-  const guild = getGuildById(guildId)
   const campaign = getCampaignById(campaignId)
   const leaderboard = getCampaignLeaderboard(campaignId)
+  const appInfo = APP_TYPE_INFO['infofi']
 
-  if (!guild || !campaign) {
+  if (!campaign) {
     return (
       <div className="flex items-center justify-center h-full">
         <p className="text-zinc-500">Campaign not found</p>
@@ -48,23 +52,28 @@ export default function InfoFiCampaignDetailPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen">
-      {/* Back Link */}
-      <div className="px-6 pt-6">
-        <Link 
-          href={`/guild/${guildId}/apps/infofi`}
-          className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to InfoFi
-        </Link>
-      </div>
+  const headerActions = (
+    <Link href={`/guild/${guildId}/apps/infofi`}>
+      <Button variant="ghost" size="sm" className="gap-2 text-zinc-400 hover:text-zinc-100">
+        <ArrowLeft className="h-4 w-4" />
+        Back to InfoFi
+      </Button>
+    </Link>
+  )
 
+  return (
+    <AppContainer
+      appId={`infofi-${campaignId}`}
+      appName={campaign.name}
+      appIcon={appInfo.icon}
+      appDescription={campaign.description}
+      appColor={appInfo.color}
+      headerActions={headerActions}
+    >
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden mb-6">
         {/* Banner Image */}
-        <div className="relative h-64 mx-6 mt-4 rounded-2xl overflow-hidden">
+        <div className="relative h-64 rounded-2xl overflow-hidden">
           <img 
             src={campaign.thumbnail}
             alt={campaign.name}
@@ -92,153 +101,147 @@ export default function InfoFiCampaignDetailPage() {
                 {isLive ? 'Live' : 'Ended'}
               </Badge>
             </div>
-            <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">{campaign.name}</h1>
-            <p className="text-zinc-300 text-sm max-w-2xl">{campaign.description}</p>
           </div>
         </div>
       </div>
 
       {/* Stats Row */}
-      <div className="px-6 py-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/50 p-4">
-            <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
-              <Trophy className="h-4 w-4" />
-              Total Rewards
-            </div>
-            <div className="text-xl font-bold text-emerald-400">
-              {formatCurrency(campaign.totalReward)}
-            </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/50 p-4">
+          <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+            <Trophy className="h-4 w-4" />
+            Total Rewards
           </div>
-          <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/50 p-4">
-            <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
-              <Users className="h-4 w-4" />
-              Participants
-            </div>
-            <div className="text-xl font-bold text-white">
-              {campaign.participantsCount.toLocaleString()}
-            </div>
+          <div className="text-xl font-bold text-emerald-400">
+            {formatCurrency(campaign.totalReward)}
           </div>
-          <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/50 p-4">
-            <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
-              <Clock className="h-4 w-4" />
-              Duration
-            </div>
-            <div className="text-sm font-medium text-white">
-              {startDateStr} - {endDateStr}
-            </div>
+        </div>
+        <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/50 p-4">
+          <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+            <Users className="h-4 w-4" />
+            Participants
           </div>
-          <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/50 p-4">
-            <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
-              <Sparkles className="h-4 w-4" />
-              Type
-            </div>
-            <div className="text-xl font-bold text-blue-400">
-              InfoFi
-            </div>
+          <div className="text-xl font-bold text-white">
+            {campaign.participantsCount.toLocaleString()}
+          </div>
+        </div>
+        <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/50 p-4">
+          <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+            <Clock className="h-4 w-4" />
+            Duration
+          </div>
+          <div className="text-sm font-medium text-white">
+            {startDateStr} - {endDateStr}
+          </div>
+        </div>
+        <div className="rounded-xl bg-zinc-900/50 border border-zinc-800/50 p-4">
+          <div className="flex items-center gap-2 text-zinc-500 text-sm mb-1">
+            <Sparkles className="h-4 w-4" />
+            Type
+          </div>
+          <div className="text-xl font-bold" style={{ color: appInfo.color }}>
+            InfoFi
           </div>
         </div>
       </div>
 
       {/* Leaderboard Section */}
-      <div className="px-6 pb-8">
-        <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/30 overflow-hidden">
-          {/* Leaderboard Header */}
-          <div className="px-6 py-4 border-b border-zinc-800/50">
-            <h2 className="text-lg font-semibold text-white">Leaderboard</h2>
-            <p className="text-sm text-zinc-500">Top creators ranked by score and multiplier</p>
-          </div>
+      <div className="rounded-2xl border border-zinc-800/50 bg-zinc-900/30 overflow-hidden">
+        {/* Leaderboard Header */}
+        <div className="px-6 py-4 border-b border-zinc-800/50">
+          <h2 className="text-lg font-semibold text-white">Leaderboard</h2>
+          <p className="text-sm text-zinc-500">Top creators ranked by score and multiplier</p>
+        </div>
 
-          {/* Table Header */}
-          <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-zinc-900/50 text-xs font-medium text-zinc-500 uppercase tracking-wider">
-            <div className="col-span-1">Rank</div>
-            <div className="col-span-3">Creator</div>
-            <div className="col-span-2 text-right">Multiplier</div>
-            <div className="col-span-2 text-right">Aura %</div>
-            <div className="col-span-2 text-center">Connections</div>
-            <div className="col-span-2 text-right">Est. Payout</div>
-          </div>
+        {/* Table Header */}
+        <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-zinc-900/50 text-xs font-medium text-zinc-500 uppercase tracking-wider">
+          <div className="col-span-1">Rank</div>
+          <div className="col-span-3">Creator</div>
+          <div className="col-span-2 text-right">Multiplier</div>
+          <div className="col-span-2 text-right">Aura %</div>
+          <div className="col-span-2 text-center">Connections</div>
+          <div className="col-span-2 text-right">Est. Payout</div>
+        </div>
 
-          {/* Leaderboard Entries */}
-          <div className="divide-y divide-zinc-800/50">
-            {leaderboard.map((entry, index) => {
-              const isTopThree = entry.rank <= 3
-              return (
-                <div 
-                  key={entry.userId}
-                  className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors hover:bg-zinc-800/30 ${
-                    isTopThree ? 'bg-zinc-800/20' : ''
-                  }`}
-                >
-                  {/* Rank */}
-                  <div className="col-span-1 flex items-center justify-center">
-                    {getMedalIcon(entry.rank)}
-                  </div>
+        {/* Leaderboard Entries */}
+        <div className="divide-y divide-zinc-800/50">
+          {leaderboard.map((entry) => {
+            const isTopThree = entry.rank <= 3
+            return (
+              <div 
+                key={entry.userId}
+                className={`grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors hover:bg-zinc-800/30 ${
+                  isTopThree ? 'bg-zinc-800/20' : ''
+                }`}
+              >
+                {/* Rank */}
+                <div className="col-span-1 flex items-center justify-center">
+                  {getMedalIcon(entry.rank)}
+                </div>
 
-                  {/* Creator */}
-                  <div className="col-span-3 flex items-center gap-3">
-                    <Avatar className="h-10 w-10 border-2 border-zinc-700">
-                      <AvatarImage src={entry.avatar} alt={entry.username} />
-                      <AvatarFallback className="bg-zinc-800 text-zinc-400">
-                        {entry.username.slice(0, 2).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium text-white truncate max-w-[150px]">
-                        @{entry.socialHandle || entry.username}
-                      </div>
-                      <div className="text-xs text-zinc-500">
-                        {entry.score.toLocaleString()} pts
-                      </div>
+                {/* Creator */}
+                <div className="col-span-3 flex items-center gap-3">
+                  <Avatar className="h-10 w-10 border-2 border-zinc-700">
+                    <AvatarImage src={entry.avatar} alt={entry.username} />
+                    <AvatarFallback className="bg-zinc-800 text-zinc-400">
+                      {entry.username.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="font-medium text-white truncate max-w-[150px]">
+                      @{entry.socialHandle || entry.username}
                     </div>
-                  </div>
-
-                  {/* Multiplier */}
-                  <div className="col-span-2 text-right">
-                    <span 
-                      className="font-bold text-lg"
-                      style={{ color: guild.accentColor }}
-                    >
-                      {entry.multiplier?.toFixed(1)}x
-                    </span>
-                  </div>
-
-                  {/* Aura % */}
-                  <div className="col-span-2 text-right">
-                    <span className="text-emerald-400 font-medium">
-                      {entry.auraPercent?.toFixed(2)}%
-                    </span>
-                  </div>
-
-                  {/* Connections */}
-                  <div className="col-span-2 flex justify-center">
-                    <div className="flex -space-x-2">
-                      {entry.connections?.slice(0, 4).map((avatar, i) => (
-                        <Avatar key={i} className="h-7 w-7 border-2 border-zinc-900">
-                          <AvatarImage src={avatar} />
-                          <AvatarFallback className="bg-zinc-800 text-xs">?</AvatarFallback>
-                        </Avatar>
-                      ))}
-                      {(entry.connections?.length || 0) > 4 && (
-                        <div className="h-7 w-7 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center text-xs text-zinc-400">
-                          +{(entry.connections?.length || 0) - 4}
-                        </div>
-                      )}
+                    <div className="text-xs text-zinc-500">
+                      {entry.score.toLocaleString()} pts
                     </div>
-                  </div>
-
-                  {/* Est. Payout */}
-                  <div className="col-span-2 text-right">
-                    <span className="font-bold text-emerald-400">
-                      ${entry.estimatedPayout}
-                    </span>
                   </div>
                 </div>
-              )
-            })}
-          </div>
+
+                {/* Multiplier */}
+                <div className="col-span-2 text-right">
+                  <span 
+                    className="font-bold text-lg"
+                    style={{ color: guild.accentColor }}
+                  >
+                    {entry.multiplier?.toFixed(1)}x
+                  </span>
+                </div>
+
+                {/* Aura % */}
+                <div className="col-span-2 text-right">
+                  <span className="text-emerald-400 font-medium">
+                    {entry.auraPercent?.toFixed(2)}%
+                  </span>
+                </div>
+
+                {/* Connections */}
+                <div className="col-span-2 flex justify-center">
+                  <div className="flex -space-x-2">
+                    {entry.connections?.slice(0, 4).map((avatar, i) => (
+                      <Avatar key={i} className="h-7 w-7 border-2 border-zinc-900">
+                        <AvatarImage src={avatar} />
+                        <AvatarFallback className="bg-zinc-800 text-xs">?</AvatarFallback>
+                      </Avatar>
+                    ))}
+                    {(entry.connections?.length || 0) > 4 && (
+                      <div className="h-7 w-7 rounded-full bg-zinc-800 border-2 border-zinc-900 flex items-center justify-center text-xs text-zinc-400">
+                        +{(entry.connections?.length || 0) - 4}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Est. Payout */}
+                <div className="col-span-2 text-right">
+                  <span className="font-bold text-emerald-400">
+                    ${entry.estimatedPayout}
+                  </span>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
-    </div>
+    </AppContainer>
   )
 }

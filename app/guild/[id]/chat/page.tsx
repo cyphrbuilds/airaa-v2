@@ -2,24 +2,20 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { MessageCircle, Users } from 'lucide-react'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { MessageCircle } from 'lucide-react'
 import { ChatMessageComponent, ChatInput } from '@/components/chat'
+import { AppContainer } from '@/components/app-container'
+import { useGuild } from '@/lib/guild-context'
+import { useAuth } from '@/lib/auth-context'
 import { ChatMessage, ChatReaction } from '@/types'
-import {
-  getGuildById,
-  getGuildMembers,
-  getGuildChatMessages,
-  currentUser,
-} from '@/lib/mock-data'
-import { cn } from '@/lib/utils'
+import { getGuildChatMessages } from '@/lib/mock-data'
 
 export default function GuildChatPage() {
   const params = useParams()
   const guildId = params.id as string
+  const { guild, members } = useGuild()
+  const { user } = useAuth()
 
-  const guild = getGuildById(guildId)
-  const members = getGuildMembers(guildId)
   const initialMessages = getGuildChatMessages(guildId)
 
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages)
@@ -33,22 +29,14 @@ export default function GuildChatPage() {
     }
   }, [messages])
 
-  if (!guild) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-zinc-500">Guild not found</p>
-      </div>
-    )
-  }
-
   const handleSendMessage = (content: string, mentions: string[]) => {
     const newMessage: ChatMessage = {
       id: `msg-${Date.now()}`,
       guildId: guild.id,
       content,
-      authorId: currentUser.id,
-      authorUsername: currentUser.username,
-      authorAvatar: currentUser.avatar,
+      authorId: user.id,
+      authorUsername: user.username,
+      authorAvatar: user.avatar,
       authorRole: 'admin', // In a real app, this would come from user's role in the guild
       timestamp: new Date(),
       reactions: [],
@@ -70,10 +58,10 @@ export default function GuildChatPage() {
 
         if (existingReaction) {
           // Check if user already reacted
-          if (existingReaction.userIds.includes(currentUser.id)) {
+          if (existingReaction.userIds.includes(user.id)) {
             // Remove user's reaction
             const newUserIds = existingReaction.userIds.filter(
-              (id) => id !== currentUser.id
+              (id) => id !== user.id
             )
             if (newUserIds.length === 0) {
               // Remove reaction entirely if no users left
@@ -99,7 +87,7 @@ export default function GuildChatPage() {
                   ? {
                       ...r,
                       count: r.count + 1,
-                      userIds: [...r.userIds, currentUser.id],
+                      userIds: [...r.userIds, user.id],
                     }
                   : r
               ),
@@ -110,7 +98,7 @@ export default function GuildChatPage() {
           const newReaction: ChatReaction = {
             emoji,
             count: 1,
-            userIds: [currentUser.id],
+            userIds: [user.id],
           }
           return {
             ...msg,
@@ -136,102 +124,77 @@ export default function GuildChatPage() {
       return acc
     }, {})
 
-  const onlineCount = members.filter((m) => m.isOnline).length
-
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="flex-shrink-0 border-b border-zinc-800 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="h-10 w-10 rounded-lg flex items-center justify-center text-2xl"
-              style={{ backgroundColor: `${guild.accentColor}20` }}
-            >
-              💬
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-zinc-100">Chat</h1>
-              <p className="text-sm text-zinc-500">
-                Community discussion for {guild.name}
+    <AppContainer
+      appId="chat"
+      appName="Chat"
+      appIcon="💬"
+      appDescription={`Community discussion for ${guild.name}`}
+      noPadding
+    >
+      <div className="flex flex-col h-full">
+        {/* Messages Area */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto">
+          {messages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-8">
+              <div
+                className="h-16 w-16 rounded-full flex items-center justify-center mb-4"
+                style={{ backgroundColor: `${guild.accentColor}20` }}
+              >
+                <MessageCircle
+                  className="h-8 w-8"
+                  style={{ color: guild.accentColor }}
+                />
+              </div>
+              <h3 className="text-lg font-semibold text-zinc-200 mb-2">
+                No messages yet
+              </h3>
+              <p className="text-zinc-500 max-w-sm">
+                Be the first to start the conversation! Say hello to the{' '}
+                {guild.name} community.
               </p>
             </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm text-zinc-400">
-              <Users className="h-4 w-4" />
-              <span>{members.length} members</span>
-              <span className="text-zinc-600">•</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-green-500" />
-                {onlineCount} online
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages Area */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center p-8">
-            <div
-              className="h-16 w-16 rounded-full flex items-center justify-center mb-4"
-              style={{ backgroundColor: `${guild.accentColor}20` }}
-            >
-              <MessageCircle
-                className="h-8 w-8"
-                style={{ color: guild.accentColor }}
-              />
-            </div>
-            <h3 className="text-lg font-semibold text-zinc-200 mb-2">
-              No messages yet
-            </h3>
-            <p className="text-zinc-500 max-w-sm">
-              Be the first to start the conversation! Say hello to the{' '}
-              {guild.name} community.
-            </p>
-          </div>
-        ) : (
-          <div className="py-4">
-            {/* Messages */}
-            {parentMessages.map((message) => (
-              <div key={message.id}>
-                <ChatMessageComponent
-                  message={message}
-                  guild={guild}
-                  members={members}
-                  currentUserId={currentUser.id}
-                  onReply={handleReply}
-                  onReaction={handleReaction}
-                />
-                {/* Replies */}
-                {repliesByParent[message.id]?.map((reply) => (
+          ) : (
+            <div className="py-4">
+              {/* Messages */}
+              {parentMessages.map((message) => (
+                <div key={message.id}>
                   <ChatMessageComponent
-                    key={reply.id}
-                    message={reply}
+                    message={message}
                     guild={guild}
                     members={members}
-                    currentUserId={currentUser.id}
+                    currentUserId={user.id}
                     onReply={handleReply}
                     onReaction={handleReaction}
-                    isReply
                   />
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                  {/* Replies */}
+                  {repliesByParent[message.id]?.map((reply) => (
+                    <ChatMessageComponent
+                      key={reply.id}
+                      message={reply}
+                      guild={guild}
+                      members={members}
+                      currentUserId={user.id}
+                      onReply={handleReply}
+                      onReaction={handleReaction}
+                      isReply
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-      {/* Input Area */}
-      <ChatInput
-        members={members}
-        accentColor={guild.accentColor}
-        replyTo={replyTo}
-        onCancelReply={() => setReplyTo(null)}
-        onSend={handleSendMessage}
-      />
-    </div>
+        {/* Input Area */}
+        <ChatInput
+          members={members}
+          accentColor={guild.accentColor}
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(null)}
+          onSend={handleSendMessage}
+        />
+      </div>
+    </AppContainer>
   )
 }
