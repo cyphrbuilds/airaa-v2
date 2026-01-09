@@ -4,7 +4,15 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 import { getGuildById, getGuildInstalledApps, getCampaignsByType } from '@/lib/mock-data'
-import { CampaignType } from '@/types'
+import { CampaignType, AppType } from '@/types'
+
+// Map AppType to CampaignType
+const APP_TO_CAMPAIGN_TYPE: Record<AppType, CampaignType> = {
+  'infofi': 'InfoFi',
+  'ugc': 'UGC',
+  'clipping': 'Clipping',
+  'mini': 'Mini',
+}
 
 export default function GuildAppsPage() {
   const params = useParams()
@@ -18,9 +26,9 @@ export default function GuildAppsPage() {
   }
 
   // Get campaign counts for each app type
-  const getAppCampaignCount = (type: string): number => {
-    const campaignType = type.charAt(0).toUpperCase() + type.slice(1) as CampaignType
-    return getCampaignsByType(guildId, campaignType === 'Infofi' ? 'InfoFi' : campaignType).filter(c => c.status === 'active').length
+  const getAppCampaignCount = (type: AppType): number => {
+    const campaignType = APP_TO_CAMPAIGN_TYPE[type]
+    return getCampaignsByType(guildId, campaignType).filter(c => c.status === 'active').length
   }
 
   return (
