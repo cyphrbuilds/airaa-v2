@@ -23,7 +23,11 @@ import {
   SupportMessage,
   AdminMember,
   MemberPersona,
-  WalletCategory
+  WalletCategory,
+  SocialTask,
+  BundleTask,
+  EarningsSummary,
+  COMMON_TOKENS
 } from '@/types'
 
 // Current logged-in user (mock auth)
@@ -174,6 +178,9 @@ export const campaigns: Campaign[] = [
     status: 'active',
     featured: true,
     forYou: true,
+    rewardToken: COMMON_TOKENS.USDC,
+    topWinners: 100,
+    userRank: 42,
     rules: [
       'Content must accurately explain Uniswap v4 Hooks',
       'Include at least one practical use case example',
@@ -242,6 +249,9 @@ export const campaigns: Campaign[] = [
     endDate: new Date('2025-03-01'),
     status: 'active',
     forYou: true,
+    rewardToken: COMMON_TOKENS.USDC,
+    topWinners: 50,
+    // No userRank - user hasn't participated yet
     rules: [
       'Explain GHO mechanics accurately',
       'Compare with other stablecoins',
@@ -310,6 +320,9 @@ export const campaigns: Campaign[] = [
     endDate: new Date('2025-02-15'),
     status: 'active',
     forYou: true,
+    rewardToken: COMMON_TOKENS.ETH,
+    topWinners: 75,
+    userRank: 18,
     rules: [
       'Explain Orbit technology accurately',
       'Include benefits for developers',
@@ -447,6 +460,9 @@ export const campaigns: Campaign[] = [
     endDate: new Date('2025-03-01'),
     status: 'active',
     forYou: true,
+    rewardToken: COMMON_TOKENS.USDC,
+    topWinners: 50,
+    userRank: 8,
     rules: [
       'Must include working code examples',
       'Use official Lens SDK/API',
@@ -509,6 +525,346 @@ export const guildMembers: GuildMember[] = [
   { id: 'user-9', username: 'trend_setter', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=trendsetter', role: 'member', isOnline: false, auraPoints: 12400, twitterHandle: 'trend_setter' },
   { id: 'user-10', username: 'content_pro', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=contentpro', role: 'member', isOnline: false, auraPoints: 8900, twitterHandle: 'content_pro' }
 ]
+
+// ============================================
+// Social Tasks (Instant Rewards)
+// ============================================
+
+export const socialTasks: SocialTask[] = [
+  {
+    id: 'task-1',
+    action: 'follow',
+    target: '@Uniswap',
+    brandName: 'Uniswap',
+    brandIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 5,
+    rewardToken: COMMON_TOKENS.USDC,
+    payoutType: 'fcfs',
+    endTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 hours from now
+    status: 'available',
+    requiresConnect: false,
+    isEligible: true,
+    guildId: 'guild-1',
+    guildName: 'Uniswap'
+  },
+  {
+    id: 'task-2',
+    action: 'retweet',
+    target: 'https://x.com/Uniswap/status/123456789',
+    brandName: 'Uniswap',
+    brandIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 3,
+    rewardToken: COMMON_TOKENS.USDC,
+    payoutType: 'raffle',
+    endTime: new Date(Date.now() + 4 * 60 * 60 * 1000), // 4 hours from now
+    status: 'available',
+    requiresConnect: false,
+    isEligible: true,
+    guildId: 'guild-1',
+    guildName: 'Uniswap'
+  },
+  {
+    id: 'task-4',
+    action: 'follow',
+    target: '@AaveAave',
+    brandName: 'Aave',
+    brandIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 8,
+    rewardToken: COMMON_TOKENS.ETH,
+    payoutType: 'capped',
+    endTime: new Date(Date.now() + 6 * 60 * 60 * 1000), // 6 hours from now
+    slotsTotal: 500,
+    slotsFilled: 342,
+    status: 'available',
+    requiresConnect: true,
+    isEligible: true,
+    guildId: 'guild-2',
+    guildName: 'Aave'
+  },
+  {
+    id: 'task-5',
+    action: 'quote',
+    target: 'https://x.com/arbitrum/status/987654321',
+    brandName: 'Arbitrum',
+    brandIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 15,
+    rewardToken: COMMON_TOKENS.ETH,
+    payoutType: 'raffle',
+    endTime: new Date(Date.now() + 12 * 60 * 60 * 1000), // 12 hours from now
+    status: 'available',
+    requiresConnect: false,
+    isEligible: true,
+    guildId: 'guild-3',
+    guildName: 'Arbitrum'
+  },
+  {
+    id: 'task-6',
+    action: 'reply',
+    target: 'https://x.com/arbitrum/status/987654322',
+    brandName: 'Arbitrum',
+    brandIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 10,
+    rewardToken: COMMON_TOKENS.ETH,
+    payoutType: 'fcfs',
+    endTime: new Date(Date.now() + 3 * 60 * 60 * 1000), // 3 hours from now
+    status: 'available',
+    requiresConnect: false,
+    isEligible: true,
+    guildId: 'guild-3',
+    guildName: 'Arbitrum'
+  },
+  {
+    id: 'task-7',
+    action: 'follow',
+    target: '@opensea',
+    brandName: 'OpenSea',
+    brandIcon: 'https://img.logo.dev/opensea.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 4,
+    rewardToken: COMMON_TOKENS.USDC,
+    payoutType: 'capped',
+    endTime: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours from now
+    slotsTotal: 1000,
+    slotsFilled: 876,
+    status: 'available',
+    requiresConnect: false,
+    isEligible: true,
+    guildId: 'guild-4',
+    guildName: 'OpenSea'
+  },
+  {
+    id: 'task-8',
+    action: 'retweet',
+    target: 'https://x.com/AxieInfinity/status/555666777',
+    brandName: 'Axie Infinity',
+    brandIcon: 'https://img.logo.dev/axieinfinity.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 6,
+    rewardToken: COMMON_TOKENS.SOL,
+    payoutType: 'raffle',
+    endTime: new Date(Date.now() + 5 * 60 * 60 * 1000), // 5 hours from now
+    status: 'available',
+    requiresConnect: false,
+    isEligible: true,
+    guildId: 'guild-5',
+    guildName: 'Axie Infinity'
+  },
+  {
+    id: 'task-10',
+    action: 'follow',
+    target: '@LensProtocol',
+    brandName: 'Lens Protocol',
+    brandIcon: 'https://img.logo.dev/lens.xyz?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 7,
+    rewardToken: COMMON_TOKENS.USDC,
+    payoutType: 'capped',
+    endTime: new Date(Date.now() + 10 * 60 * 60 * 1000), // 10 hours from now
+    slotsTotal: 200,
+    slotsFilled: 45,
+    status: 'available',
+    requiresConnect: true,
+    isEligible: true,
+    guildId: 'guild-6',
+    guildName: 'Lens Protocol'
+  },
+  // Ineligible tasks (user doesn't meet requirements)
+  {
+    id: 'task-13',
+    action: 'follow',
+    target: '@RippleXDev',
+    brandName: 'Ripple',
+    brandIcon: 'https://img.logo.dev/ripple.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 25,
+    rewardToken: COMMON_TOKENS.XRP,
+    payoutType: 'fcfs',
+    endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+    status: 'available',
+    requiresConnect: false,
+    isEligible: false,
+    ineligibleReason: 'Connect wallet',
+    guildId: 'guild-7',
+    guildName: 'Ripple'
+  },
+  {
+    id: 'task-14',
+    action: 'quote',
+    target: 'https://x.com/solana/status/999888777',
+    brandName: 'Solana',
+    brandIcon: 'https://img.logo.dev/solana.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 50,
+    rewardToken: COMMON_TOKENS.SOL,
+    payoutType: 'raffle',
+    endTime: new Date(Date.now() + 48 * 60 * 60 * 1000), // 48 hours from now
+    status: 'available',
+    requiresConnect: false,
+    isEligible: false,
+    ineligibleReason: 'Min 1000 followers required',
+    guildId: 'guild-8',
+    guildName: 'Solana'
+  },
+  // Completed tasks
+  {
+    id: 'task-11',
+    action: 'follow',
+    target: '@ethereum',
+    brandName: 'Ethereum',
+    brandIcon: 'https://img.logo.dev/ethereum.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 5,
+    rewardToken: COMMON_TOKENS.ETH,
+    payoutType: 'fcfs',
+    endTime: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    status: 'rewarded',
+    requiresConnect: false,
+    isEligible: true,
+    guildId: 'guild-1',
+    guildName: 'Uniswap'
+  },
+  {
+    id: 'task-12',
+    action: 'retweet',
+    target: 'https://x.com/AaveAave/status/444555666',
+    brandName: 'Aave',
+    brandIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    earnAmount: 3,
+    rewardToken: COMMON_TOKENS.USDC,
+    payoutType: 'raffle',
+    endTime: new Date(Date.now() - 1 * 60 * 60 * 1000), // 1 hour ago
+    status: 'rewarded',
+    requiresConnect: false,
+    isEligible: true,
+    guildId: 'guild-2',
+    guildName: 'Aave'
+  },
+]
+
+// Bundle tasks (multi-action tasks requiring all actions to be completed)
+export const bundleTasks: BundleTask[] = [
+  {
+    id: 'bundle-1',
+    brandName: 'Uniswap',
+    brandIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    actions: [
+      { id: 'b1-follow', action: 'follow', target: '@Uniswap', status: 'pending' },
+      { id: 'b1-quote', action: 'quote', target: 'https://x.com/Uniswap/status/123456789', status: 'pending' },
+      { id: 'b1-reply', action: 'reply', target: 'https://x.com/Uniswap/status/123456789', status: 'pending' },
+    ],
+    earnAmount: 25,
+    rewardToken: COMMON_TOKENS.USDC,
+    payoutType: 'fcfs',
+    endTime: new Date(Date.now() + 6 * 60 * 60 * 1000), // 6 hours from now
+    status: 'available',
+    isEligible: true,
+    guildId: 'guild-1',
+    guildName: 'Uniswap'
+  },
+  {
+    id: 'bundle-2',
+    brandName: 'Arbitrum',
+    brandIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    actions: [
+      { id: 'b2-follow', action: 'follow', target: '@arbitrum', status: 'verified' },
+      { id: 'b2-retweet', action: 'retweet', target: 'https://x.com/arbitrum/status/987654321', status: 'pending' },
+    ],
+    earnAmount: 15,
+    rewardToken: COMMON_TOKENS.ETH,
+    payoutType: 'raffle',
+    endTime: new Date(Date.now() + 12 * 60 * 60 * 1000), // 12 hours from now
+    status: 'available',
+    isEligible: true,
+    guildId: 'guild-3',
+    guildName: 'Arbitrum'
+  },
+  {
+    id: 'bundle-3',
+    brandName: 'Aave',
+    brandIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    actions: [
+      { id: 'b3-follow', action: 'follow', target: '@AaveAave', status: 'pending' },
+      { id: 'b3-quote', action: 'quote', target: 'https://x.com/AaveAave/status/111222333', status: 'pending' },
+      { id: 'b3-reply', action: 'reply', target: 'https://x.com/AaveAave/status/111222333', status: 'pending' },
+      { id: 'b3-retweet', action: 'retweet', target: 'https://x.com/AaveAave/status/444555666', status: 'pending' },
+    ],
+    earnAmount: 50,
+    rewardToken: COMMON_TOKENS.USDC,
+    payoutType: 'capped',
+    endTime: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+    status: 'available',
+    isEligible: true,
+    guildId: 'guild-2',
+    guildName: 'Aave'
+  },
+  // Ineligible bundle task example
+  {
+    id: 'bundle-4',
+    brandName: 'Ripple',
+    brandIcon: 'https://img.logo.dev/ripple.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+    platform: 'twitter',
+    actions: [
+      { id: 'b4-follow', action: 'follow', target: '@Ripple', status: 'pending' },
+      { id: 'b4-quote', action: 'quote', target: 'https://x.com/Ripple/status/999888777', status: 'pending' },
+    ],
+    earnAmount: 30,
+    rewardToken: COMMON_TOKENS.XRP,
+    payoutType: 'fcfs',
+    endTime: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours from now
+    status: 'available',
+    isEligible: false,
+    ineligibleReason: 'Connect wallet',
+    guildId: 'guild-7',
+    guildName: 'Ripple'
+  }
+]
+
+// User earnings summary
+export const userEarningsSummary: EarningsSummary = {
+  earnedToday: 23,
+  earnedThisWeek: 156,
+  pendingAmount: 12,
+  tasksCompletedToday: 5
+}
+
+// Helper functions for social tasks
+export function getSocialTasks(): SocialTask[] {
+  return socialTasks
+}
+
+export function getAvailableSocialTasks(): SocialTask[] {
+  return socialTasks.filter(t => t.status === 'available')
+}
+
+export function getCompletedSocialTasks(): SocialTask[] {
+  return socialTasks.filter(t => t.status === 'completed' || t.status === 'rewarded')
+}
+
+export function getPendingSocialTasks(): SocialTask[] {
+  return socialTasks.filter(t => t.status === 'pending')
+}
+
+// Helper functions for bundle tasks
+export function getBundleTasks(): BundleTask[] {
+  return bundleTasks
+}
+
+export function getAvailableBundleTasks(): BundleTask[] {
+  return bundleTasks.filter(t => t.status === 'available')
+}
+
+export function getUserEarnings(): EarningsSummary {
+  return userEarningsSummary
+}
 
 // Leaderboard data - Creators
 export const leaderboardUsers: LeaderboardUser[] = [

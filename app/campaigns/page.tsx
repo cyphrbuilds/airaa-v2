@@ -4,88 +4,223 @@ import { useState, useMemo } from 'react'
 import { Search, ChevronDown, Check, ArrowRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { CampaignCardNew } from '@/components/cards/campaign-card-new'
-import { campaigns, getActiveCampaigns, getTotalRewardsDistributed, formatRewardsShort } from '@/lib/mock-data'
-import { CampaignType, CampaignCategory } from '@/types'
-import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  UnifiedTabs,
+  SocialTaskCard,
+  BundleTaskCard,
+  CampaignRewardCard,
+  EarningsSummary,
+  EmptyState,
+  type UnifiedTab,
+} from '@/components/campaigns'
+import { 
+  getActiveCampaigns, 
+  getTotalRewardsDistributed, 
+  formatRewardsShort,
+  getSocialTasks,
+  getBundleTasks,
+  getUserEarnings,
+} from '@/lib/mock-data'
+import { SocialTask, BundleTask } from '@/types'
+import { cn } from '@/lib/utils'
 
-const campaignTypes: (CampaignType | 'All')[] = ['All', 'InfoFi', 'Mini', 'UGC', 'Clipping']
-const campaignCategories: (CampaignCategory | 'All')[] = ['All', 'Marketplace', 'Gaming', 'DeFi', 'NFT', 'Social', 'Education']
-const statusOptions = [
-  { value: 'all', label: 'All campaigns' },
-  { value: 'active', label: 'Live campaigns' },
-  { value: 'upcoming', label: 'Upcoming' },
-  { value: 'past', label: 'Ended' },
-]
-const sortOptions = [
-  { value: 'popular', label: 'Most Popular' },
-  { value: 'reward', label: 'Highest Reward' },
-  { value: 'recent', label: 'Recently Added' },
+type SortOption = 'recommended' | 'highest' | 'ending'
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'highest', label: 'Highest Payout' },
   { value: 'ending', label: 'Ending Soon' },
 ]
 
 export default function CampaignsPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedType, setSelectedType] = useState<CampaignType | 'All'>('All')
-  const [selectedCategory, setSelectedCategory] = useState<CampaignCategory | 'All'>('All')
-  const [selectedStatus, setSelectedStatus] = useState('all')
-  const [sortBy, setSortBy] = useState('popular')
+  const [selectedTab, setSelectedTab] = useState<UnifiedTab>('instant')
+  const [sortBy, setSortBy] = useState<SortOption>('recommended')
 
   const totalRewards = getTotalRewardsDistributed()
   const allCampaigns = getActiveCampaigns()
+  const allTasks = getSocialTasks()
+  const allBundleTasks = getBundleTasks()
+  const userEarnings = getUserEarnings()
 
-  const filteredCampaigns = useMemo(() => {
-    let result = [...allCampaigns]
+  // Local state for bundle task actions (simulating verification)
+  const [bundleTaskState, setBundleTaskState] = useState<Record<string, BundleTask>>(() => {
+    const state: Record<string, BundleTask> = {}
+    allBundleTasks.forEach(t => { state[t.id] = { ...t } })
+    return state
+  })
+
+  // Determine if we're showing instant tasks or campaigns
+  const isInstantMode = selectedTab === 'instant'
+
+  // Filter and sort social tasks
+  const filteredTasks = useMemo(() => {
+    let tasks = [...allTasks]
 
     // Search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
-      result = result.filter(c => 
+      tasks = tasks.filter(t => 
+        t.brandName.toLowerCase().includes(query) ||
+        t.target.toLowerCase().includes(query)
+      )
+    }
+
+    // Separate by status
+    const available = tasks.filter(t => t.status === 'available')
+    const pending = tasks.filter(t => t.status === 'pending')
+    const completed = tasks.filter(t => t.status === 'completed' || t.status === 'rewarded')
+
+    // Sort available tasks
+    switch (sortBy) {
+      case 'highest':
+        available.sort((a, b) => b.earnAmount - a.earnAmount)
+        break
+      case 'ending':
+        available.sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime())
+        break
+      case 'recommended':
+      default:
+        // Mix of high payout and urgency
+        available.sort((a, b) => {
+          const scoreA = a.earnAmount * (1 / (new Date(a.endTime).getTime() - Date.now()))
+          const scoreB = b.earnAmount * (1 / (new Date(b.endTime).getTime() - Date.now()))
+          return scoreB - scoreA
+        })
+    }
+
+    return { available, pending, completed }
+  }, [allTasks, searchQuery, sortBy])
+
+  // Filter and sort bundle tasks
+  const filteredBundleTasks = useMemo(() => {
+    let bundles = Object.values(bundleTaskState)
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      bundles = bundles.filter(t => 
+        t.brandName.toLowerCase().includes(query)
+      )
+    }
+
+    // Separate by status
+    const available = bundles.filter(t => t.status === 'available')
+    const completed = bundles.filter(t => t.status === 'completed' || t.status === 'rewarded')
+
+    // Sort available bundles
+    switch (sortBy) {
+      case 'highest':
+        available.sort((a, b) => b.earnAmount - a.earnAmount)
+        break
+      case 'ending':
+        available.sort((a, b) => new Date(a.endTime).getTime() - new Date(b.endTime).getTime())
+        break
+      case 'recommended':
+      default:
+        // Mix of high payout and urgency
+        available.sort((a, b) => {
+          const scoreA = a.earnAmount * (1 / (new Date(a.endTime).getTime() - Date.now()))
+          const scoreB = b.earnAmount * (1 / (new Date(b.endTime).getTime() - Date.now()))
+          return scoreB - scoreA
+        })
+    }
+
+    return { available, completed }
+  }, [bundleTaskState, searchQuery, sortBy])
+
+  // Filter and sort campaigns
+  const filteredCampaigns = useMemo(() => {
+    let campaigns = [...allCampaigns]
+
+    // Filter by tab/type
+    if (selectedTab !== 'instant') {
+      const typeMap: Record<string, string> = {
+        'infofi': 'InfoFi',
+        'ugc': 'UGC',
+        'clipping': 'Clipping',
+      }
+      campaigns = campaigns.filter(c => c.type === typeMap[selectedTab])
+    }
+
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      campaigns = campaigns.filter(c => 
         c.name.toLowerCase().includes(query) ||
-        c.description.toLowerCase().includes(query) ||
         c.guildName.toLowerCase().includes(query)
       )
     }
 
-    // Type filter
-    if (selectedType !== 'All') {
-      result = result.filter(c => c.type === selectedType)
-    }
-
-    // Category filter
-    if (selectedCategory !== 'All') {
-      result = result.filter(c => c.category === selectedCategory)
-    }
-
-    // Status filter
-    if (selectedStatus !== 'all') {
-      result = result.filter(c => c.status === selectedStatus)
-    }
-
     // Sort
     switch (sortBy) {
-      case 'reward':
-        result.sort((a, b) => b.totalReward - a.totalReward)
-        break
-      case 'recent':
-        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      case 'highest':
+        campaigns.sort((a, b) => b.totalReward - a.totalReward)
         break
       case 'ending':
-        result.sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
+        campaigns.sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
         break
-      case 'popular':
+      case 'recommended':
       default:
-        result.sort((a, b) => b.participantsCount - a.participantsCount)
+        // Featured first, then by reward
+        campaigns.sort((a, b) => {
+          if (a.featured && !b.featured) return -1
+          if (!a.featured && b.featured) return 1
+          return b.totalReward - a.totalReward
+        })
     }
 
-    return result
-  }, [searchQuery, selectedType, selectedCategory, selectedStatus, sortBy, allCampaigns])
+    return campaigns
+  }, [allCampaigns, selectedTab, searchQuery, sortBy])
+
+  // Tab counts (include both single tasks and bundle tasks)
+  const tabCounts = useMemo(() => ({
+    instant: filteredTasks.available.length + filteredBundleTasks.available.length,
+    infofi: allCampaigns.filter(c => c.type === 'InfoFi').length,
+    ugc: allCampaigns.filter(c => c.type === 'UGC').length,
+    clipping: allCampaigns.filter(c => c.type === 'Clipping').length,
+  }), [filteredTasks.available.length, filteredBundleTasks.available.length, allCampaigns])
+
+  const handleTaskComplete = (taskId: string) => {
+    // In a real app, this would call an API
+    console.log('Completing task:', taskId)
+  }
+
+  // Handle verifying a sub-action within a bundle task
+  const handleVerifyAction = (taskId: string, actionId: string) => {
+    setBundleTaskState(prev => {
+      const task = prev[taskId]
+      if (!task) return prev
+      
+      const updatedActions = task.actions.map(a => 
+        a.id === actionId ? { ...a, status: 'verified' as const } : a
+      )
+      
+      return {
+        ...prev,
+        [taskId]: { ...task, actions: updatedActions }
+      }
+    })
+  }
+
+  // Handle claiming reward for completed bundle task
+  const handleClaimReward = (taskId: string) => {
+    setBundleTaskState(prev => {
+      const task = prev[taskId]
+      if (!task) return prev
+      
+      return {
+        ...prev,
+        [taskId]: { ...task, status: 'rewarded' as const }
+      }
+    })
+  }
 
   return (
     <div className="min-h-screen">
@@ -97,7 +232,7 @@ export default function CampaignsPage() {
           <div className="absolute top-20 right-1/4 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl" />
         </div>
         
-        <div className="relative px-6 py-16 max-w-7xl mx-auto text-center">
+        <div className="relative px-6 py-12 max-w-5xl mx-auto text-center">
           {/* Stats badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 mb-6">
             <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
@@ -107,25 +242,24 @@ export default function CampaignsPage() {
           </div>
           
           {/* Title */}
-          <h1 className="text-5xl md:text-6xl font-bold text-white mb-4 tracking-tight">
-            Explore Campaigns
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight">
+            Campaigns
           </h1>
           
           {/* Subtitle */}
-          <p className="text-zinc-400 text-lg mb-10 max-w-2xl mx-auto">
-            Participate in campaigns based on your content,<br />
-            engagement, and onchain activity.
+          <p className="text-zinc-400 text-base mb-8 max-w-xl mx-auto">
+            Earn rewards through social tasks, content creation, and more.
           </p>
 
           {/* Search Bar */}
-          <div className="relative max-w-xl mx-auto mb-6">
+          <div className="relative max-w-md mx-auto mb-6">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-500" />
             <Input
               type="text"
-              placeholder="Search campaigns"
+              placeholder="Search tasks or campaigns..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-12 h-12 bg-zinc-900/80 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:border-green-500 focus:ring-green-500/20 rounded-xl"
+              className="pl-12 h-11 bg-zinc-900/80 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:border-green-500 focus:ring-green-500/20 rounded-xl"
             />
           </div>
           
@@ -140,93 +274,24 @@ export default function CampaignsPage() {
         </div>
       </div>
 
-      {/* Campaign Grid */}
-      <div className="px-6 py-8 max-w-7xl mx-auto">
-        {/* Filters Row */}
-        <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
-          {/* Left side filters */}
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Categories dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-9 px-3 text-zinc-400 hover:text-white hover:bg-zinc-800">
-                  {selectedType === 'All' ? 'Type' : selectedType}
-                  <ChevronDown className="h-4 w-4 ml-1.5 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-zinc-900 border-zinc-700">
-                {campaignTypes.map((type) => (
-                  <DropdownMenuItem
-                    key={type}
-                    onClick={() => setSelectedType(type)}
-                    className={cn(
-                      "cursor-pointer",
-                      selectedType === type && "text-green-500"
-                    )}
-                  >
-                    {type === 'All' ? 'All Types' : type}
-                    {selectedType === type && <Check className="h-4 w-4 ml-auto" />}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+      {/* Main Content */}
+      <div className="px-6 py-6 max-w-5xl mx-auto space-y-6">
+        {/* Earnings Summary */}
+        <EarningsSummary earnings={userEarnings} />
 
-            {/* Status dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-9 px-3 text-zinc-400 hover:text-white hover:bg-zinc-800">
-                  {statusOptions.find(s => s.value === selectedStatus)?.label}
-                  <ChevronDown className="h-4 w-4 ml-1.5 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-zinc-900 border-zinc-700">
-                {statusOptions.map((option) => (
-                  <DropdownMenuItem
-                    key={option.value}
-                    onClick={() => setSelectedStatus(option.value)}
-                    className={cn(
-                      "cursor-pointer",
-                      selectedStatus === option.value && "text-green-500"
-                    )}
-                  >
-                    {option.label}
-                    {selectedStatus === option.value && <Check className="h-4 w-4 ml-auto" />}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+        {/* Unified Tabs + Sort */}
+        <div className="flex items-center justify-between gap-4">
+          <UnifiedTabs 
+            selected={selectedTab}
+            onChange={setSelectedTab}
+            counts={tabCounts}
+          />
 
-            {/* Category dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-9 px-3 text-zinc-400 hover:text-white hover:bg-zinc-800">
-                  {selectedCategory === 'All' ? 'Category' : selectedCategory}
-                  <ChevronDown className="h-4 w-4 ml-1.5 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-zinc-900 border-zinc-700">
-                {campaignCategories.map((category) => (
-                  <DropdownMenuItem
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={cn(
-                      "cursor-pointer",
-                      selectedCategory === category && "text-green-500"
-                    )}
-                  >
-                    {category === 'All' ? 'All Categories' : category}
-                    {selectedCategory === category && <Check className="h-4 w-4 ml-auto" />}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Right side - Sort */}
+          {/* Sort dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-9 px-3 text-zinc-400 hover:text-white hover:bg-zinc-800">
-                {sortOptions.find(s => s.value === sortBy)?.label || 'Sort by'}
+                {sortOptions.find(s => s.value === sortBy)?.label || 'Sort'}
                 <ChevronDown className="h-4 w-4 ml-1.5 opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -247,23 +312,97 @@ export default function CampaignsPage() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {filteredCampaigns.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredCampaigns.map((campaign) => (
-              <CampaignCardNew key={campaign.id} campaign={campaign} />
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-800/50 mb-4">
-              <Search className="h-10 w-10 text-zinc-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-zinc-200 mb-2">No campaigns found</h3>
-            <p className="text-zinc-500 max-w-sm">
-              Try adjusting your filters or search query to find what you're looking for.
-            </p>
-          </div>
-        )}
+
+        {/* Task/Campaign List */}
+        <div className="space-y-3">
+          {isInstantMode ? (
+            // Instant Tasks (Social + Bundle)
+            <>
+              {filteredTasks.available.length > 0 || filteredTasks.pending.length > 0 || filteredBundleTasks.available.length > 0 ? (
+                <>
+                  {/* Pending single tasks */}
+                  {filteredTasks.pending.map((task) => (
+                    <SocialTaskCard 
+                      key={task.id} 
+                      task={task}
+                      onComplete={handleTaskComplete}
+                    />
+                  ))}
+
+                  {/* Bundle tasks (shown first for higher rewards) */}
+                  {filteredBundleTasks.available.map((task) => (
+                    <BundleTaskCard 
+                      key={task.id} 
+                      task={task}
+                      onVerifyAction={handleVerifyAction}
+                      onClaimReward={handleClaimReward}
+                    />
+                  ))}
+
+                  {/* Available single tasks */}
+                  {filteredTasks.available.map((task) => (
+                    <SocialTaskCard 
+                      key={task.id} 
+                      task={task}
+                      onComplete={handleTaskComplete}
+                    />
+                  ))}
+
+                  {/* Completed section */}
+                  {(filteredTasks.completed.length > 0 || filteredBundleTasks.completed.length > 0) && (
+                    <div className="pt-4">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="h-px flex-1 bg-zinc-800" />
+                        <span className="text-xs text-zinc-500 uppercase tracking-wider">
+                          Completed ({filteredTasks.completed.length + filteredBundleTasks.completed.length})
+                        </span>
+                        <div className="h-px flex-1 bg-zinc-800" />
+                      </div>
+                      {filteredBundleTasks.completed.map((task) => (
+                        <BundleTaskCard 
+                          key={task.id} 
+                          task={task}
+                        />
+                      ))}
+                      {filteredTasks.completed.map((task) => (
+                        <SocialTaskCard 
+                          key={task.id} 
+                          task={task}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <EmptyState 
+                  type="no-tasks" 
+                  rewardSpeed="instant"
+                  onSwitchMode={() => setSelectedTab('infofi')}
+                />
+              )}
+            </>
+          ) : (
+            // Campaign Rewards
+            <>
+              {filteredCampaigns.length > 0 ? (
+                filteredCampaigns.map((campaign) => (
+                  <CampaignRewardCard 
+                    key={campaign.id} 
+                    campaign={campaign}
+                    isEligible={Math.random() > 0.2} // Mock eligibility
+                    ineligibleReason={Math.random() > 0.5 ? 'Connect wallet' : 'Requirements not met'}
+                  />
+                ))
+              ) : (
+                <EmptyState 
+                  type="no-campaigns" 
+                  rewardSpeed="campaign"
+                  onSwitchMode={() => setSelectedTab('instant')}
+                />
+              )}
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

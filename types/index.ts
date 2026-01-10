@@ -151,6 +151,12 @@ export interface Campaign {
   createdAt: Date
   featured?: boolean
   forYou?: boolean
+  /** Token used for rewards (optional) */
+  rewardToken?: RewardToken
+  /** Number of top winners that will be rewarded (e.g., 100 for "Top 100") */
+  topWinners?: number
+  /** User's current rank in the campaign (if participating) */
+  userRank?: number
 }
 
 export interface LeaderboardEntry {
@@ -675,4 +681,179 @@ export const WALLET_CATEGORY_COLORS: Record<WalletCategory, string> = {
   '$1k-$10k': '#3b82f6',   // blue
   '$10k-$100k': '#8b5cf6', // purple
   '$100k+': '#22c55e',     // green
+}
+
+// ============================================
+// Reward Token Types
+// ============================================
+
+/** Token used for rewards */
+export interface RewardToken {
+  /** Token symbol (e.g. 'USDC', 'XRP', 'ETH') */
+  symbol: string
+  /** URL to token icon */
+  icon: string
+}
+
+/** Common token definitions for convenience */
+export const COMMON_TOKENS: Record<string, RewardToken> = {
+  USDC: { symbol: 'USDC', icon: '/tokens/usdc.svg' },
+  XRP: { symbol: 'XRP', icon: '/tokens/xrp.svg' },
+  ETH: { symbol: 'ETH', icon: '/tokens/eth.svg' },
+  SOL: { symbol: 'SOL', icon: '/tokens/sol.svg' },
+  USDT: { symbol: 'USDT', icon: '/tokens/usdt.svg' },
+}
+
+// ============================================
+// Social Task Types (Instant Rewards)
+// ============================================
+
+/** Payout distribution method for social tasks */
+export type PayoutType = 'fcfs' | 'raffle' | 'capped'
+
+/** Current status of a social task for a user */
+export type TaskStatus = 'available' | 'pending' | 'completed' | 'rewarded'
+
+/** Type of social action required */
+export type TaskAction = 'follow' | 'retweet' | 'reply' | 'quote'
+
+/**
+ * A social task for instant rewards
+ * These are quick, verifiable actions on social platforms
+ */
+export interface SocialTask {
+  /** Unique identifier */
+  id: string
+  /** Type of action required */
+  action: TaskAction
+  /** Target handle or post URL */
+  target: string
+  /** Display name of the brand/account */
+  brandName: string
+  /** Brand icon URL */
+  brandIcon: string
+  /** Platform (currently only twitter) */
+  platform: 'twitter'
+  /** Amount earned for completing task */
+  earnAmount: number
+  /** Token used for reward payment */
+  rewardToken?: RewardToken
+  /** How rewards are distributed */
+  payoutType: PayoutType
+  /** When the task expires */
+  endTime: Date
+  /** Total slots available (for capped tasks) */
+  slotsTotal?: number
+  /** Slots already claimed (for capped tasks) */
+  slotsFilled?: number
+  /** Current status for the user */
+  status: TaskStatus
+  /** Whether user needs to connect their X account first */
+  requiresConnect: boolean
+  /** Whether user is eligible for this task */
+  isEligible?: boolean
+  /** Reason why user is not eligible (if applicable) */
+  ineligibleReason?: string
+  /** Guild ID this task belongs to */
+  guildId: string
+  /** Guild name */
+  guildName: string
+}
+
+/** Labels for payout types */
+export const PAYOUT_TYPE_LABELS: Record<PayoutType, string> = {
+  'fcfs': 'First Come First Served',
+  'raffle': 'Raffle',
+  'capped': 'Limited Spots'
+}
+
+/** Short labels for payout types (badge display) */
+export const PAYOUT_TYPE_SHORT: Record<PayoutType, string> = {
+  'fcfs': 'FCFS',
+  'raffle': 'Raffle',
+  'capped': 'Capped'
+}
+
+/** Colors for payout type badges */
+export const PAYOUT_TYPE_COLORS: Record<PayoutType, { bg: string; text: string }> = {
+  'fcfs': { bg: 'bg-blue-500/20', text: 'text-blue-400' },
+  'raffle': { bg: 'bg-purple-500/20', text: 'text-purple-400' },
+  'capped': { bg: 'bg-amber-500/20', text: 'text-amber-400' }
+}
+
+/** Labels for task actions */
+export const TASK_ACTION_LABELS: Record<TaskAction, string> = {
+  'follow': 'Follow',
+  'retweet': 'Retweet',
+  'reply': 'Reply to',
+  'quote': 'Quote'
+}
+
+/** User's daily earnings summary */
+export interface EarningsSummary {
+  /** Total earned today */
+  earnedToday: number
+  /** Total earned this week */
+  earnedThisWeek: number
+  /** Total pending verification */
+  pendingAmount: number
+  /** Number of tasks completed today */
+  tasksCompletedToday: number
+}
+
+// ============================================
+// Bundle Task Types (Multi-Action Tasks)
+// ============================================
+
+/** Status of a sub-action within a bundle task */
+export type SubActionStatus = 'pending' | 'verified'
+
+/**
+ * A single action within a bundle task
+ * Each sub-action must be verified individually
+ */
+export interface SubAction {
+  /** Unique identifier for this sub-action */
+  id: string
+  /** Type of action required */
+  action: TaskAction
+  /** Target handle or post URL */
+  target: string
+  /** Current verification status */
+  status: SubActionStatus
+}
+
+/**
+ * A bundle task requiring multiple actions for a single reward
+ * User must complete and verify all sub-actions to claim the reward
+ */
+export interface BundleTask {
+  /** Unique identifier */
+  id: string
+  /** Display name of the brand/account */
+  brandName: string
+  /** Brand icon URL */
+  brandIcon: string
+  /** Platform (currently only twitter) */
+  platform: 'twitter'
+  /** Array of required sub-actions */
+  actions: SubAction[]
+  /** Total amount earned for completing all actions */
+  earnAmount: number
+  /** Token used for reward payment */
+  rewardToken?: RewardToken
+  /** How rewards are distributed */
+  payoutType: PayoutType
+  /** When the task expires */
+  endTime: Date
+  /** Overall status of the bundle task */
+  status: TaskStatus
+  /** Whether user is eligible for this task */
+  isEligible?: boolean
+  /** Reason why user is not eligible (if applicable) */
+  ineligibleReason?: string
+  /** Guild ID this task belongs to */
+  guildId: string
+  /** Guild name */
+  guildName: string
 }
