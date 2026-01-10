@@ -598,3 +598,81 @@ export interface SupportMessage {
   /** Whether the message has been read by the recipient */
   isRead: boolean
 }
+
+// ============================================
+// Admin Members Table Types
+// ============================================
+
+/**
+ * Auto-derived member personas based on behavior and contribution
+ * These are read-only and computed from member activity
+ */
+export type MemberPersona = 
+  | 'Creator' 
+  | 'Power Creator' 
+  | 'Trader' 
+  | 'DeFi Native' 
+  | 'Referrer' 
+  | 'Passive'
+
+/**
+ * Wallet value categories based on total holdings
+ */
+export type WalletCategory = '<$1k' | '$1k-$10k' | '$10k-$100k' | '$100k+'
+
+/**
+ * Extended member type for admin members table
+ * Contains all contribution metrics and behavior data
+ */
+export interface AdminMember {
+  /** Unique identifier */
+  id: string
+  /** Display name */
+  name: string
+  /** Username handle */
+  username: string
+  /** URL to avatar image */
+  avatar: string
+  /** Wallet address */
+  wallet: string
+  /** Member's role in the guild */
+  role: 'admin' | 'moderator' | 'member'
+  /** Auto-derived persona based on behavior */
+  persona: MemberPersona
+  /** Total posts/content created */
+  posts: number
+  /** Total impressions generated */
+  impressions: number
+  /** Engagement rate as percentage (0-100) */
+  engagement: number
+  /** Trading volume in USD */
+  volume: number
+  /** Fees generated in USD */
+  fees: number
+  /** Number of successful referrals */
+  referrals: number
+  /** Top protocols used (e.g., ['Uniswap', 'Aave', 'Lido']) */
+  topProtocols: string[]
+  /** Wallet value category */
+  walletCategory: WalletCategory
+  /** When member joined the guild */
+  joinedAt: Date
+}
+
+/** Color mapping for member personas (used in badges) */
+export const PERSONA_COLORS: Record<MemberPersona, string> = {
+  'Creator': '#3b82f6',       // blue
+  'Power Creator': '#22c55e', // green
+  'Trader': '#f97316',        // orange
+  'DeFi Native': '#8b5cf6',   // purple
+  'Referrer': '#ec4899',      // pink
+  'Passive': '#6b7280',       // gray
+}
+
+/** Color mapping for wallet categories (used in badges) */
+export const WALLET_CATEGORY_COLORS: Record<WalletCategory, string> = {
+  '<$1k': '#6b7280',       // gray
+  '$1k-$10k': '#3b82f6',   // blue
+  '$10k-$100k': '#8b5cf6', // purple
+  '$100k+': '#22c55e',     // green
+}

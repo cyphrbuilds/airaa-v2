@@ -36,15 +36,15 @@ export function FeaturedCommunityCard({ guild, className }: FeaturedCommunityCar
         />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/60 to-transparent" />
 
-        {/* Rewards Badge */}
-        <div className="absolute top-3 right-3">
+        {/* Rewards Badge - Centered */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
           <Badge 
-            className="bg-zinc-900/90 text-zinc-100 border-zinc-700 backdrop-blur-sm font-medium"
+            className="bg-zinc-900/80 text-zinc-100 border-zinc-700 backdrop-blur-sm font-medium text-sm px-3 py-1"
           >
             Rewards
           </Badge>
-          <div className="mt-1 text-center">
-            <span className="text-xl font-bold text-white drop-shadow-lg">
+          <div className="mt-2 text-center">
+            <span className="text-[50px] font-bold text-white drop-shadow-lg">
               ${formatRewardsShort(guild.totalRewardsDistributed)}
             </span>
           </div>

@@ -3,10 +3,10 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Compass, Trophy, Medal, Plus, User } from 'lucide-react'
+import { Compass, Trophy, Medal, Plus, User, Crown, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
-import { guilds } from '@/lib/mock-data'
+import { guilds, isUserAdminOrMod } from '@/lib/mock-data'
 import {
   Tooltip,
   TooltipContent,
@@ -18,6 +18,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 
 const navItems = [
   { id: 'discover', label: 'Discover', icon: Compass, href: '/discover' },
+  { id: 'communities', label: 'Communities', icon: Users, href: '/communities' },
   { id: 'campaigns', label: 'Campaigns', icon: Trophy, href: '/campaigns' },
   { id: 'leaderboard', label: 'Leaderboard', icon: Medal, href: '/leaderboard' },
 ]
@@ -27,9 +28,9 @@ export function GlobalSidebar() {
   const { user } = useAuth()
   const [isCollapsed, setIsCollapsed] = useState(false)
 
-  // Auto-collapse when navigating to guild routes
+  // Auto-collapse when navigating to guild routes (member or admin)
   useEffect(() => {
-    const isInGuild = pathname.startsWith('/guild/')
+    const isInGuild = pathname.startsWith('/guild/') || pathname.startsWith('/admin/guild/')
     setIsCollapsed(isInGuild)
   }, [pathname])
   
@@ -67,68 +68,70 @@ export function GlobalSidebar() {
         </Link>
       </div>
 
-      {/* Navigation */}
-      <div className={cn("py-3", isCollapsed ? "px-3" : "px-3")}>
-        {navItems.map((item) => {
-          const active = isActive(item.href)
-          const Icon = item.icon
+      {/* Scrollable Content Area */}
+      <ScrollArea className="flex-1">
+        {/* Navigation */}
+        <div className={cn("py-3", isCollapsed ? "px-3" : "px-3")}>
+          {navItems.map((item) => {
+            const active = isActive(item.href)
+            const Icon = item.icon
+            
+            return isCollapsed ? (
+              <Tooltip key={item.id}>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex h-10 w-full items-center justify-center rounded-lg mb-1 transition-all duration-200",
+                      active 
+                        ? "bg-green-500/15 text-green-500" 
+                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" className="bg-zinc-900 border-zinc-700">
+                  <p>{item.label}</p>
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              <Link
+                key={item.id}
+                href={item.href}
+                className={cn(
+                  "flex h-10 w-full items-center gap-3 rounded-lg px-3 mb-1 transition-all duration-200",
+                  active 
+                    ? "bg-green-500/15 text-green-500" 
+                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                )}
+              >
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                <span className="text-sm font-medium">{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+
+        <Separator className="bg-zinc-800/50" />
+
+        {/* Guilds Section */}
+        <div className="py-3">
+          {!isCollapsed && (
+            <div className="px-4 mb-2">
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                Your Guilds
+              </span>
+            </div>
+          )}
           
-          return isCollapsed ? (
-            <Tooltip key={item.id}>
-              <TooltipTrigger asChild>
-                <Link
-                  href={item.href}
-                  className={cn(
-                    "flex h-10 w-full items-center justify-center rounded-lg mb-1 transition-all duration-200",
-                    active 
-                      ? "bg-green-500/15 text-green-500" 
-                      : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                </Link>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="bg-zinc-900 border-zinc-700">
-                <p>{item.label}</p>
-              </TooltipContent>
-            </Tooltip>
-          ) : (
-            <Link
-              key={item.id}
-              href={item.href}
-              className={cn(
-                "flex h-10 w-full items-center gap-3 rounded-lg px-3 mb-1 transition-all duration-200",
-                active 
-                  ? "bg-green-500/15 text-green-500" 
-                  : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-              )}
-            >
-              <Icon className="h-5 w-5 flex-shrink-0" />
-              <span className="text-sm font-medium">{item.label}</span>
-            </Link>
-          )
-        })}
-      </div>
-
-      <Separator className="bg-zinc-800/50" />
-
-      {/* Guilds Section */}
-      <div className="flex-1 overflow-hidden py-3">
-        {!isCollapsed && (
-          <div className="px-4 mb-2">
-            <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-              Your Guilds
-            </span>
-          </div>
-        )}
-        
-        <ScrollArea className="h-full px-3">
           <div className={cn(
-            "flex flex-col",
+            "flex flex-col px-3",
             isCollapsed ? "items-center gap-2" : "gap-1"
           )}>
             {joinedGuilds.map((guild) => {
               const active = isGuildActive(guild.id)
+              const isAdminOrMod = isUserAdminOrMod(guild.id)
               
               return isCollapsed ? (
                 <Tooltip key={guild.id}>
@@ -146,7 +149,8 @@ export function GlobalSidebar() {
                       <div
                         className={cn(
                           "h-full w-full rounded-xl overflow-hidden transition-all duration-200",
-                          active ? "rounded-lg ring-2 ring-green-500" : "hover:rounded-lg"
+                          active ? "rounded-lg ring-2 ring-green-500" : "hover:rounded-lg",
+                          isAdminOrMod && !active && "ring-2 ring-amber-500/70"
                         )}
                       >
                         <img 
@@ -155,10 +159,19 @@ export function GlobalSidebar() {
                           className="h-full w-full object-cover"
                         />
                       </div>
+                      {/* Admin/Mod Crown Badge */}
+                      {isAdminOrMod && (
+                        <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-amber-500 flex items-center justify-center border-2 border-zinc-950">
+                          <Crown className="h-2.5 w-2.5 text-zinc-900" />
+                        </div>
+                      )}
                     </Link>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="bg-zinc-900 border-zinc-700">
                     <p className="font-medium">{guild.name}</p>
+                    {isAdminOrMod && (
+                      <p className="text-xs text-amber-400">You're an admin</p>
+                    )}
                     <p className="text-xs text-zinc-500">{guild.onlineMembers.toLocaleString()} online</p>
                   </TooltipContent>
                 </Tooltip>
@@ -173,15 +186,24 @@ export function GlobalSidebar() {
                       : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
                   )}
                 >
-                  <div className={cn(
-                    "h-8 w-8 rounded-lg overflow-hidden flex-shrink-0",
-                    active && "ring-2 ring-green-500"
-                  )}>
-                    <img 
-                      src={guild.icon} 
-                      alt={guild.name}
-                      className="h-full w-full object-cover"
-                    />
+                  <div className="relative flex-shrink-0">
+                    <div className={cn(
+                      "h-8 w-8 rounded-lg overflow-hidden",
+                      active && "ring-2 ring-green-500",
+                      isAdminOrMod && !active && "ring-2 ring-amber-500/70"
+                    )}>
+                      <img 
+                        src={guild.icon} 
+                        alt={guild.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    {/* Admin/Mod Crown Badge */}
+                    {isAdminOrMod && (
+                      <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-amber-500 flex items-center justify-center border-2 border-zinc-950">
+                        <Crown className="h-2 w-2 text-zinc-900" />
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium truncate">{guild.name}</p>
@@ -212,8 +234,8 @@ export function GlobalSidebar() {
               </button>
             )}
           </div>
-        </ScrollArea>
-      </div>
+        </div>
+      </ScrollArea>
 
       <Separator className="bg-zinc-800/50" />
 

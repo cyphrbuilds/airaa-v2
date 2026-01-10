@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { Search, ChevronLeft, ChevronRight, Users, Trophy, BadgeCheck } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, Users, Trophy, BadgeCheck, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { RewardTicker } from '@/components/dashboard/reward-ticker'
@@ -151,7 +151,16 @@ export default function DiscoverPage() {
 
             {/* Category Tabs */}
             <section>
-              <h2 className="text-xl font-semibold text-zinc-100 mb-4">Browse Communities</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-zinc-100">Browse Communities</h2>
+                <Link 
+                  href="/communities"
+                  className="flex items-center gap-1.5 text-sm font-medium text-green-500 hover:text-green-400 transition-colors"
+                >
+                  View All Communities
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
               
               {/* Category Pills */}
               <div className="flex items-center gap-2 flex-wrap mb-6">

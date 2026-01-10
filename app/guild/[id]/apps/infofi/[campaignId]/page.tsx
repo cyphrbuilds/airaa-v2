@@ -8,10 +8,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { AppContainer } from '@/components/app-container'
+import { ViewModeBanner } from '@/components/admin/view-mode-banner'
 import { useGuild } from '@/lib/guild-context'
 import { 
   getCampaignById,
   getCampaignLeaderboard,
+  isUserAdminOrMod,
 } from '@/lib/mock-data'
 import { formatCurrency } from '@/lib/utils'
 import { APP_TYPE_INFO } from '@/types'
@@ -21,6 +23,7 @@ export default function InfoFiCampaignDetailPage() {
   const guildId = params.id as string
   const campaignId = params.campaignId as string
   const { guild } = useGuild()
+  const isAdminOrMod = isUserAdminOrMod(guildId)
   
   const campaign = getCampaignById(campaignId)
   const leaderboard = getCampaignLeaderboard(campaignId)
@@ -53,12 +56,20 @@ export default function InfoFiCampaignDetailPage() {
   }
 
   const headerActions = (
-    <Link href={`/guild/${guildId}/apps/infofi`}>
-      <Button variant="ghost" size="sm" className="gap-2 text-zinc-400 hover:text-zinc-100">
-        <ArrowLeft className="h-4 w-4" />
-        Back to InfoFi
-      </Button>
-    </Link>
+    <div className="flex items-center gap-2">
+      <ViewModeBanner 
+        guildId={guildId} 
+        appType="infofi" 
+        isAdminOrMod={isAdminOrMod}
+        accentColor={appInfo.color}
+      />
+      <Link href={`/guild/${guildId}/apps/infofi`}>
+        <Button variant="ghost" size="sm" className="gap-2 text-zinc-400 hover:text-zinc-100">
+          <ArrowLeft className="h-4 w-4" />
+          Back to InfoFi
+        </Button>
+      </Link>
+    </div>
   )
 
   return (

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ChevronDown, ChevronRight, CheckCircle, MoreVertical, Settings, BarChart3, PlusCircle } from 'lucide-react'
+import { ChevronDown, ChevronRight, CheckCircle, MoreVertical, Settings, BarChart3, PlusCircle, Users } from 'lucide-react'
 import { Guild, InstalledApp } from '@/types'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -127,6 +127,22 @@ export function GuildSidebar({ guild }: GuildSidebarProps) {
                   >
                     <BarChart3 className="h-4 w-4" />
                     <span>Dashboard</span>
+                  </Link>
+                  <Link
+                    href={`/guild/${guild.id}/admin/members`}
+                    className={cn(
+                      "flex items-center gap-2 px-2 py-1.5 rounded-md text-sm transition-all",
+                      isAdminActive('members')
+                        ? "text-white" 
+                        : "text-zinc-300 hover:text-white hover:bg-zinc-700/50"
+                    )}
+                    style={isAdminActive('members') ? { 
+                      backgroundColor: `${guild.accentColor}25`,
+                      color: guild.accentColor
+                    } : undefined}
+                  >
+                    <Users className="h-4 w-4" />
+                    <span>Members</span>
                   </Link>
                   <Link
                     href={`/guild/${guild.id}/admin/app-store`}

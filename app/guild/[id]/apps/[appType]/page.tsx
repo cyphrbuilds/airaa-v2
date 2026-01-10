@@ -5,8 +5,9 @@ import { Sparkles, Settings } from 'lucide-react'
 import { AppContainer } from '@/components/app-container'
 import { Button } from '@/components/ui/button'
 import { useGuild } from '@/lib/guild-context'
-import { getStoreAppBySlug } from '@/lib/mock-data'
+import { getStoreAppBySlug, isUserAdminOrMod } from '@/lib/mock-data'
 import { HowItWorksModal } from '@/components/how-it-works'
+import { ViewModeBanner } from '@/components/admin/view-mode-banner'
 
 export default function GenericAppPage() {
   const params = useParams()
@@ -14,6 +15,7 @@ export default function GenericAppPage() {
   const appType = params.appType as string
   
   const { guild, allInstalledApps, getCustomizedApp } = useGuild()
+  const isAdminOrMod = isUserAdminOrMod(guildId)
   
   // Find the installed app by type/slug
   const installedApp = allInstalledApps.find(app => app.type === appType)
@@ -67,7 +69,17 @@ export default function GenericAppPage() {
       appIcon={appInfo.icon}
       appDescription={appInfo.description}
       appColor={appColor}
-      headerActions={<HowItWorksModal appSlug={appType} communityName={guild.name} />}
+      headerActions={
+        <div className="flex items-center gap-2">
+          <ViewModeBanner 
+            guildId={guildId} 
+            appType={appType} 
+            isAdminOrMod={isAdminOrMod}
+            accentColor={appColor}
+          />
+          <HowItWorksModal appSlug={appType} communityName={guild.name} />
+        </div>
+      }
     >
       {/* Empty State - Coming Soon */}
       <div className="flex flex-col items-center justify-center h-full min-h-[500px] px-4 relative">

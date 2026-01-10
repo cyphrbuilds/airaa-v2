@@ -20,9 +20,9 @@ export default function RootLayout({
       <body className={GeistSans.className}>
         <AuthProvider>
           <TooltipProvider delayDuration={0}>
-            <div className="flex min-h-screen bg-[#0a0a0a] overflow-x-hidden">
+            <div className="flex h-screen bg-[#0a0a0a] overflow-hidden">
               <GlobalSidebar />
-              <main className="flex-1 transition-all duration-200 overflow-x-hidden">{children}</main>
+              <main className="flex-1 transition-all duration-200 overflow-y-auto overflow-x-hidden">{children}</main>
             </div>
           </TooltipProvider>
         </AuthProvider>

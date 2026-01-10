@@ -75,6 +75,16 @@
     background-color: hsl(var(--muted));
     border-radius: 3px;
   }
+
+  /* Hide scrollbar completely */
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
   
   /* Gradient text - now green */
   .gradient-text {
@@ -210,6 +220,7 @@
   .float {
     animation: float 3s ease-in-out infinite;
   }
+
   
   /* Hero background with green particles */
   .hero-bg {

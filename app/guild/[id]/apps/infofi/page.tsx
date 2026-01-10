@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/button'
 import { AvatarStack } from '@/components/ui/avatar-stack'
 import { AppContainer } from '@/components/app-container'
 import { InfoFiHowItWorksModal } from '@/components/infofi'
+import { ViewModeBanner } from '@/components/admin/view-mode-banner'
 import { useGuild } from '@/lib/guild-context'
 import { 
   getCampaignsByType,
   guildMembers,
   getGuildInstalledApps,
+  isUserAdminOrMod,
 } from '@/lib/mock-data'
 import { Campaign, APP_TYPE_INFO } from '@/types'
 import { formatCurrency } from '@/lib/utils'
@@ -21,6 +23,7 @@ export default function InfoFiAppPage() {
   const params = useParams()
   const guildId = params.id as string
   const { guild, getCustomizedApp } = useGuild()
+  const isAdminOrMod = isUserAdminOrMod(guildId)
   
   const allCampaigns = getCampaignsByType(guildId, 'InfoFi')
   
@@ -130,14 +133,26 @@ export default function InfoFiAppPage() {
     )
   }
 
+  const appColor = infofiApp?.color || defaultAppInfo.color
+
   return (
     <AppContainer
       appId="infofi"
       appName={appInfo.name}
       appIcon={appInfo.icon}
       appDescription={appInfo.description}
-      appColor={infofiApp?.color || defaultAppInfo.color}
-      headerActions={<InfoFiHowItWorksModal />}
+      appColor={appColor}
+      headerActions={
+        <div className="flex items-center gap-2">
+          <ViewModeBanner 
+            guildId={guildId} 
+            appType="infofi" 
+            isAdminOrMod={isAdminOrMod}
+            accentColor={appColor}
+          />
+          <InfoFiHowItWorksModal />
+        </div>
+      }
     >
       {/* Campaigns Header */}
       <div className="flex items-center justify-between mb-6">

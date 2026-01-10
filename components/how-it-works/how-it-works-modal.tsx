@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogTrigger,
   DialogClose,
+  DialogTitle,
 } from '@/components/ui/dialog'
 import { cn } from '@/lib/utils'
 import { getAppSteps, hasHowItWorksContent, Step } from './step-content'
@@ -99,6 +100,9 @@ export function HowItWorksModal({ appSlug, communityName }: HowItWorksModalProps
       </DialogTrigger>
       
       <DialogContent className="max-w-lg p-0" hideCloseButton>
+        {/* Visually hidden title for accessibility */}
+        <DialogTitle className="sr-only">How it works</DialogTitle>
+        
         {/* Close button */}
         <DialogClose className="absolute right-3 top-3 p-1.5 rounded-md text-zinc-500 hover:text-zinc-100 hover:bg-zinc-800 transition-colors">
           <X className="h-4 w-4" />
