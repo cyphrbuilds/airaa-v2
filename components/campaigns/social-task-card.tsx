@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
+import { cn, truncateUrl } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { 
   SocialTask, 
@@ -91,7 +91,15 @@ export function SocialTaskCard({
   const getActionText = () => {
     const action = TASK_ACTION_LABELS[task.action]
     if (task.action === 'follow') {
-      return `${action} ${task.target} on X`
+      // For follow actions, show truncated target (could be @username or URL)
+      const displayTarget = task.target.startsWith('http') 
+        ? truncateUrl(task.target) 
+        : task.target
+      return `${action} ${displayTarget}`
+    }
+    // For retweet, quote, reply - truncate the URL
+    if (task.target && task.target.startsWith('http')) {
+      return `${action} ${truncateUrl(task.target)}`
     }
     return `${action} post on X`
   }

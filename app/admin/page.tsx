@@ -21,7 +21,8 @@ import {
 import { StatsCard } from '@/components/stats-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { campaigns, activityData } from '@/lib/mock-data'
+import { getActiveCampaigns, activityData } from '@/lib/mock-data'
+import { Campaign } from '@/types'
 import { formatCurrency, formatNumber } from '@/lib/utils'
 import { CampaignTag, TAG_COLORS } from '@/types'
 import { cn } from '@/lib/utils'
@@ -37,11 +38,12 @@ const rewardSpendData = [
 ]
 
 export default function AdminDashboard() {
+  const campaigns = getActiveCampaigns()
   const totalRewardsSpent = rewardSpendData.reduce((sum, d) => sum + d.spend, 0)
-  const totalParticipants = campaigns.reduce((sum, c) => sum + c.participantsCount, 0)
-  const activeCampaignCount = campaigns.filter(c => c.status === 'active').length
-  const totalRewards = campaigns.reduce((sum, c) => sum + c.totalReward, 0)
-  const avgReward = totalRewards / campaigns.length
+  const totalParticipants = campaigns.reduce((sum: number, c: Campaign) => sum + c.participantsCount, 0)
+  const activeCampaignCount = campaigns.filter((c: Campaign) => c.status === 'active').length
+  const totalRewards = campaigns.reduce((sum: number, c: Campaign) => sum + c.totalReward, 0)
+  const avgReward = campaigns.length > 0 ? totalRewards / campaigns.length : 0
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] p-6">
@@ -57,7 +59,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatsCard
           label="Total Paid Out"
-          value={formatCurrency(campaigns.reduce((sum, c) => sum + c.paidOut, 0))}
+          value={formatCurrency(campaigns.reduce((sum: number, c: Campaign) => sum + c.paidOut, 0))}
           icon={DollarSign}
           valueClassName="text-green-400"
           trend={{ value: 23.5, positive: true }}
@@ -203,8 +205,8 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {campaigns.slice(0, 6).map((campaign) => {
-                  const statusColors = {
+                {campaigns.slice(0, 6).map((campaign: Campaign) => {
+                  const statusColors: Record<string, string> = {
                     active: 'bg-green-500/20 text-green-400 border-green-500/30',
                     upcoming: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
                     past: 'bg-zinc-500/20 text-zinc-400 border-zinc-500/30',
@@ -218,7 +220,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex gap-1">
-                          {campaign.tags.slice(0, 2).map((tag) => {
+                          {campaign.tags.slice(0, 2).map((tag: CampaignTag) => {
                             const colors = TAG_COLORS[tag]
                             return (
                               <Badge 

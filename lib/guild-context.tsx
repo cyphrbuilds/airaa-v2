@@ -5,8 +5,11 @@ import { Guild, GuildMember, InstalledApp, GuildAppInstallation } from '@/types'
 import { 
   subscribeToAppStore, 
   getAppStoreSnapshot,
+  getAppStoreServerSnapshot,
   installAppForGuild,
   uninstallAppFromGuild,
+  deleteAppWithData,
+  isMockApp as isMockAppCheck,
   isAppInstalledForGuild,
   getInstalledAppsForGuild,
   getAllInstalledAppsForGuild
@@ -35,7 +38,9 @@ interface GuildContextValue {
   installedStoreApps: GuildAppInstallation[]
   installApp: (appId: string, userId: string) => InstalledApp | null
   uninstallApp: (appId: string) => void
+  deleteApp: (appId: string, appType: string) => void
   isAppInstalled: (appId: string) => boolean
+  isMockApp: (appId: string) => boolean
   getAppInstallation: (appId: string) => GuildAppInstallation | undefined
   
   // Merged installed apps (mock data + dynamically installed)
@@ -64,7 +69,7 @@ export function GuildProvider({
   const storeSnapshot = useSyncExternalStore(
     subscribeToAppStore,
     getAppStoreSnapshot,
-    getAppStoreSnapshot // Server snapshot (same as client for this use case)
+    getAppStoreServerSnapshot // Server returns 0 to prevent hydration mismatch
   )
 
   // Get customization for a specific app
@@ -103,9 +108,19 @@ export function GuildProvider({
     uninstallAppFromGuild(guild.id, appId)
   }, [guild.id])
 
+  // Delete an app and all its campaign data
+  const deleteApp = useCallback((appId: string, appType: string) => {
+    deleteAppWithData(guild.id, appId, appType)
+  }, [guild.id])
+
   // Check if an app is installed - uses external store
   const isAppInstalled = useCallback((appId: string): boolean => {
     return isAppInstalledForGuild(guild.id, appId)
+  }, [guild.id])
+
+  // Check if an app is a mock/default app (not deletable)
+  const isMockApp = useCallback((appId: string): boolean => {
+    return isMockAppCheck(guild.id, appId)
   }, [guild.id])
 
   // Get installation details for an app
@@ -141,7 +156,9 @@ export function GuildProvider({
         installedStoreApps,
         installApp,
         uninstallApp,
+        deleteApp,
         isAppInstalled,
+        isMockApp,
         getAppInstallation,
         allInstalledApps,
       }}

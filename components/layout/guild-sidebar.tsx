@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { ChevronDown, ChevronRight, CheckCircle, MoreVertical, Settings, BarChart3, PlusCircle, Users } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { ChevronDown, ChevronRight, CheckCircle, MoreVertical, Settings, BarChart3, PlusCircle, Users, Trash2 } from 'lucide-react'
 import { Guild, InstalledApp } from '@/types'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -22,12 +22,13 @@ interface GuildSidebarProps {
 
 export function GuildSidebar({ guild }: GuildSidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
   const [hoveredAppId, setHoveredAppId] = useState<string | null>(null)
   const [openMenuAppId, setOpenMenuAppId] = useState<string | null>(null) // Track which app's dropdown is open
   const [settingsModalApp, setSettingsModalApp] = useState<InstalledApp | null>(null)
   
-  const { getAppCustomization, setAppCustomization, getCustomizedApp, userRole, allInstalledApps } = useGuild()
+  const { getAppCustomization, setAppCustomization, getCustomizedApp, userRole, allInstalledApps, deleteApp, isMockApp } = useGuild()
   const installedApps = allInstalledApps
   
   const isAdmin = userRole === 'admin'
@@ -45,11 +46,25 @@ export function GuildSidebar({ guild }: GuildSidebarProps) {
   }
 
   const isActive = (href: string) => pathname === href
-  const isAppActive = (appType: string) => pathname.startsWith(`/guild/${guild.id}/apps/${appType}`)
+  // Check both member route and admin route for app highlighting
+  const isAppActive = (appType: string) => 
+    pathname.startsWith(`/guild/${guild.id}/apps/${appType}`) ||
+    pathname.startsWith(`/admin/guild/${guild.id}/apps/${appType}`)
   const isAdminActive = (path: string) => pathname.startsWith(`/guild/${guild.id}/admin/${path}`)
 
   const handleAppSettingsSave = (customization: AppCustomization) => {
     setAppCustomization(customization)
+  }
+
+  const handleDeleteApp = (app: InstalledApp) => {
+    if (window.confirm(`Are you sure you want to delete "${app.name}"? This will also delete all campaigns created with this app. This action cannot be undone.`)) {
+      deleteApp(app.id, app.type)
+      setOpenMenuAppId(null)
+      // Navigate to guild home if currently on the deleted app's page
+      if (pathname.startsWith(`/guild/${guild.id}/apps/${app.type}`)) {
+        router.push(`/guild/${guild.id}`)
+      }
+    }
   }
 
   return (
@@ -335,6 +350,15 @@ export function GuildSidebar({ guild }: GuildSidebarProps) {
                                   <Settings className="h-4 w-4 mr-2" />
                                   App settings
                                 </DropdownMenuItem>
+                                {!isMockApp(app.id) && (
+                                  <DropdownMenuItem 
+                                    onClick={() => handleDeleteApp(app)}
+                                    className="text-red-400 focus:text-red-300 focus:bg-zinc-800 cursor-pointer"
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" />
+                                    Delete app
+                                  </DropdownMenuItem>
+                                )}
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>

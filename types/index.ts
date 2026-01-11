@@ -310,6 +310,14 @@ export interface RewardPayout {
   campaignName: string
   amount: number
   timestamp: Date
+  /** Type of reward - token (crypto) or points */
+  rewardType: 'token' | 'points'
+  /** Token symbol for token rewards (e.g., 'USDC', 'ETH') */
+  tokenSymbol?: string
+  /** Token icon URL for token rewards (e.g., '/tokens/usdc.svg') */
+  tokenIcon?: string
+  /** Points name for point rewards (e.g., 'aura points', 'xo points') */
+  pointsName?: string
 }
 
 // Chat types
@@ -396,32 +404,16 @@ export const CAMPAIGN_CATEGORY_COLORS: Record<CampaignCategory, string> = {
  * Categories for apps in the App Store
  * Used to filter and organize distribution tools
  */
-export type StoreAppCategory = 
-  | 'Virality' 
-  | 'Onchain' 
-  | 'Video' 
-  | 'Airdrops' 
-  | 'Tools' 
-  | 'Dapps'
+export type StoreAppCategory = 'Campaigns'
 
 /** All available app store categories in display order */
 export const STORE_APP_CATEGORIES: StoreAppCategory[] = [
-  'Virality',
-  'Onchain',
-  'Video',
-  'Airdrops',
-  'Tools',
-  'Dapps'
+  'Campaigns'
 ]
 
 /** Color mapping for each app store category (used in badges and UI accents) */
 export const STORE_APP_CATEGORY_COLORS: Record<StoreAppCategory, string> = {
-  'Virality': '#22c55e',
-  'Onchain': '#3b82f6',
-  'Video': '#ec4899',
-  'Airdrops': '#f97316',
-  'Tools': '#8b5cf6',
-  'Dapps': '#14b8a6',
+  'Campaigns': '#3b82f6',
 }
 
 /**
@@ -856,4 +848,366 @@ export interface BundleTask {
   guildId: string
   /** Guild name */
   guildName: string
+}
+
+// ============================================
+// Social Campaign Types (Admin Campaign Creation)
+// ============================================
+
+/** Types of social tasks that can be included in a campaign */
+export type SocialCampaignTaskType = 'follow' | 'comment' | 'quote' | 'post'
+
+/** Distribution methods for social campaigns */
+export type SocialDistributionMethod = 'fcfs' | 'raffle' | 'customized'
+
+/** Labels for social campaign task types */
+export const SOCIAL_TASK_TYPE_LABELS: Record<SocialCampaignTaskType, string> = {
+  'follow': 'Follow',
+  'comment': 'Comment',
+  'quote': 'Quote Tweet',
+  'post': 'Post'
+}
+
+/** Icons for social campaign task types */
+export const SOCIAL_TASK_TYPE_ICONS: Record<SocialCampaignTaskType, string> = {
+  'follow': '👤',
+  'comment': '💬',
+  'quote': '🔄',
+  'post': '📝'
+}
+
+/** Descriptions for social campaign task types */
+export const SOCIAL_TASK_TYPE_DESCRIPTIONS: Record<SocialCampaignTaskType, string> = {
+  'follow': 'Require users to follow a Twitter account',
+  'comment': 'Require users to comment on a specific post',
+  'quote': 'Require users to quote tweet a specific post',
+  'post': 'Require users to create an original post'
+}
+
+/** Labels for distribution methods */
+export const DISTRIBUTION_METHOD_LABELS: Record<SocialDistributionMethod, string> = {
+  'fcfs': 'First Come First Serve',
+  'raffle': 'Raffle',
+  'customized': 'Customized Rewards'
+}
+
+/** Descriptions for distribution methods */
+export const DISTRIBUTION_METHOD_DESCRIPTIONS: Record<SocialDistributionMethod, string> = {
+  'fcfs': 'First N eligible users who complete all tasks win rewards',
+  'raffle': 'Random selection from all eligible completions after campaign ends',
+  'customized': 'Invite specific KOLs with fixed rewards per user'
+}
+
+/** Icons for distribution methods */
+export const DISTRIBUTION_METHOD_ICONS: Record<SocialDistributionMethod, string> = {
+  'fcfs': '⚡',
+  'raffle': '🎲',
+  'customized': '👑'
+}
+
+/**
+ * A single task within a social campaign
+ * Configurable by the admin during campaign creation
+ */
+export interface SocialCampaignTask {
+  /** Type of social action required */
+  type: SocialCampaignTaskType
+  /** Target Twitter handle (for follow tasks) */
+  targetAccount?: string
+  /** Target post URL (for comment/quote tasks) */
+  targetPostUrl?: string
+  /** Guidelines for text-based tasks (comment/quote/post) */
+  guidelines?: string
+  /** Whether AI validation is enabled for this task */
+  aiValidation?: boolean
+}
+
+/**
+ * Eligibility filters for social campaigns
+ * Restricts who can participate based on account attributes
+ */
+export interface SocialCampaignEligibility {
+  /** Minimum follower count required */
+  minFollowers?: number
+  /** Minimum smart followers count */
+  minSmartFollowers?: number
+  /** Target geographic locations */
+  targetLocations?: string[]
+  /** Minimum account age in days */
+  minAccountAge?: number
+  /** Only allow smart accounts (bot-filtered) */
+  smartAccountOnly?: boolean
+  /** Only allow verified accounts */
+  verifiedOnly?: boolean
+}
+
+/** Status of a social campaign */
+export type SocialCampaignStatus = 'draft' | 'active' | 'completed' | 'cancelled'
+
+/**
+ * A social campaign created by guild admins
+ * Contains all configuration for the campaign
+ */
+export interface SocialCampaign {
+  /** Unique identifier */
+  id: string
+  /** Guild this campaign belongs to */
+  guildId: string
+  /** Campaign display name */
+  name: string
+  /** Tasks required to complete the campaign */
+  tasks: SocialCampaignTask[]
+  /** How rewards are distributed */
+  distributionMethod: SocialDistributionMethod
+  /** Blockchain for reward distribution (e.g., 'base') */
+  blockchain: string
+  /** Token for rewards (e.g., 'USDC') */
+  token: string
+  /** Total reward pool amount */
+  rewardPool: number
+  /** Number of winners */
+  totalWinners: number
+  /** Calculated per-winner reward */
+  perWinnerReward: number
+  /** Service fee percentage */
+  serviceFee: number
+  /** Total amount payable (rewardPool + fees) */
+  totalPayable: number
+  /** Eligibility filters (for FCFS/Raffle) */
+  eligibilityFilters?: SocialCampaignEligibility
+  /** KOL list (for customized distribution) */
+  kolList?: string[]
+  /** KOL reward per user (for customized distribution) */
+  kolRewardPerUser?: number
+  /** Current campaign status */
+  status: SocialCampaignStatus
+  /** When the campaign was created */
+  createdAt: Date
+  /** When the campaign ends */
+  endDate?: Date
+  /** Number of users who started participation */
+  participantsCount: number
+  /** Number of users who completed all tasks */
+  completedCount: number
+  /** Number of rewards claimed */
+  rewardsClaimedCount: number
+}
+
+/**
+ * Form state for campaign creation wizard
+ * Used to track user input across wizard steps
+ */
+export interface SocialCampaignFormState {
+  /** Selected task types */
+  selectedTaskTypes: SocialCampaignTaskType[]
+  /** Configured tasks */
+  tasks: SocialCampaignTask[]
+  /** Selected distribution method */
+  distributionMethod: SocialDistributionMethod | null
+  /** Blockchain selection */
+  blockchain: string
+  /** Token selection */
+  token: string
+  /** Reward pool amount */
+  rewardPool: number
+  /** Number of winners */
+  totalWinners: number
+  /** Eligibility filters */
+  eligibilityFilters: SocialCampaignEligibility
+  /** KOL list for customized distribution */
+  kolList: string[]
+  /** Per-KOL reward for customized distribution */
+  kolRewardPerUser: number
+  /** Campaign name */
+  name: string
+}
+
+/** Default form state for new campaigns */
+export const DEFAULT_SOCIAL_CAMPAIGN_FORM: SocialCampaignFormState = {
+  selectedTaskTypes: [],
+  tasks: [],
+  distributionMethod: null,
+  blockchain: 'base',
+  token: 'USDC',
+  rewardPool: 1000,
+  totalWinners: 100,
+  eligibilityFilters: {},
+  kolList: [],
+  kolRewardPerUser: 100,
+  name: ''
+}
+
+/** Available blockchains for reward distribution */
+export const SUPPORTED_BLOCKCHAINS = [
+  { id: 'base', name: 'Base', icon: '/tokens/eth.svg' },
+  { id: 'ethereum', name: 'Ethereum', icon: '/tokens/eth.svg' },
+  { id: 'arbitrum', name: 'Arbitrum', icon: '/tokens/eth.svg' },
+  { id: 'polygon', name: 'Polygon', icon: '/tokens/eth.svg' },
+] as const
+
+/** Available tokens for rewards */
+export const SUPPORTED_TOKENS = [
+  { id: 'USDC', name: 'USDC', icon: '/tokens/usdc.svg' },
+  { id: 'USDT', name: 'USDT', icon: '/tokens/usdt.svg' },
+  { id: 'ETH', name: 'ETH', icon: '/tokens/eth.svg' },
+] as const
+
+/** Service fee percentage */
+export const SOCIAL_CAMPAIGN_SERVICE_FEE = 0.10 // 10%
+
+// ============================================
+// Unified Campaign System Types
+// ============================================
+
+/**
+ * Status for unified campaigns
+ */
+export type UnifiedCampaignStatus = 'draft' | 'active' | 'completed' | 'cancelled'
+
+/**
+ * Parameters for creating a unified campaign
+ * Used by the campaign store's createCampaign function
+ */
+export interface CreateCampaignParams {
+  /** Guild this campaign belongs to */
+  guildId: string
+  /** App type that created this campaign (e.g., 'social-tasks', 'infofi') */
+  appType: string
+  /** Campaign display name */
+  name: string
+  /** Optional description */
+  description?: string
+  /** Optional thumbnail URL */
+  thumbnail?: string
+  /** Total reward pool amount */
+  rewardPool: number
+  /** Reward per winner */
+  perWinnerReward: number
+  /** Number of winners */
+  totalWinners: number
+  /** Token symbol for rewards (e.g., 'USDC') */
+  token: string
+  /** Blockchain for reward distribution (e.g., 'base') */
+  blockchain: string
+  /** Campaign end date */
+  endDate?: Date
+  /** App-specific configuration (flexible JSON) */
+  config: Record<string, unknown>
+}
+
+/**
+ * A unified campaign that works across all app types
+ * This is the single source of truth for all campaigns in the system
+ * 
+ * @example
+ * ```ts
+ * const campaign: UnifiedCampaign = {
+ *   id: 'campaign-123',
+ *   guildId: 'guild-1',
+ *   guildName: 'Uniswap',
+ *   guildIcon: 'https://...',
+ *   appType: 'social-tasks',
+ *   appName: 'Social Tasks',
+ *   name: 'Follow & Retweet Campaign',
+ *   rewardPool: 1000,
+ *   perWinnerReward: 10,
+ *   totalWinners: 100,
+ *   token: 'USDC',
+ *   blockchain: 'base',
+ *   status: 'active',
+ *   createdAt: new Date(),
+ *   participantsCount: 0,
+ *   completedCount: 0,
+ *   config: {
+ *     tasks: [...],
+ *     distributionMethod: 'fcfs'
+ *   }
+ * }
+ * ```
+ */
+export interface UnifiedCampaign {
+  /** Unique identifier */
+  id: string
+  /** Guild this campaign belongs to */
+  guildId: string
+  /** Cached guild name for display */
+  guildName: string
+  /** Cached guild icon URL for display */
+  guildIcon: string
+  
+  // App metadata
+  /** App type that created this campaign (e.g., 'social-tasks', 'infofi') */
+  appType: string
+  /** Display name of the app */
+  appName: string
+  
+  // Core campaign data
+  /** Campaign display name */
+  name: string
+  /** Optional description */
+  description?: string
+  /** Optional thumbnail URL */
+  thumbnail?: string
+  
+  // Rewards
+  /** Total reward pool amount */
+  rewardPool: number
+  /** Reward per winner */
+  perWinnerReward: number
+  /** Number of winners */
+  totalWinners: number
+  /** Token symbol for rewards (e.g., 'USDC') */
+  token: string
+  /** Blockchain for reward distribution (e.g., 'base') */
+  blockchain: string
+  
+  // Status & timing
+  /** Current campaign status */
+  status: UnifiedCampaignStatus
+  /** When the campaign was created */
+  createdAt: Date
+  /** When the campaign ends */
+  endDate?: Date
+  
+  // Participation
+  /** Number of users who started participation */
+  participantsCount: number
+  /** Number of users who completed all tasks */
+  completedCount: number
+  
+  // App-specific config (flexible JSON)
+  /** App-specific configuration data */
+  config: Record<string, unknown>
+}
+
+/**
+ * App type metadata for unified campaigns
+ * Maps app slugs to their display info
+ */
+export const UNIFIED_APP_TYPE_INFO: Record<string, { name: string; icon: string; color: string }> = {
+  'social-tasks': {
+    name: 'Social Tasks',
+    icon: '📱',
+    color: '#3b82f6'
+  },
+  'infofi': {
+    name: 'InfoFi',
+    icon: '📚',
+    color: '#22c55e'
+  },
+  'ugc': {
+    name: 'UGC',
+    icon: '🎬',
+    color: '#f97316'
+  },
+  'clipping': {
+    name: 'Clipping',
+    icon: '✂️',
+    color: '#ec4899'
+  },
+  'mini': {
+    name: 'Mini',
+    icon: '⚡',
+    color: '#3b82f6'
+  }
 }

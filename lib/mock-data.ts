@@ -1,3 +1,4 @@
+import { truncateUrl } from '@/lib/utils'
 import { 
   User, 
   Guild, 
@@ -27,8 +28,19 @@ import {
   SocialTask,
   BundleTask,
   EarningsSummary,
-  COMMON_TOKENS
+  COMMON_TOKENS,
+  SocialCampaign, 
+  SocialCampaignTask,
+  SocialCampaignEligibility,
+  SocialDistributionMethod,
+  SocialCampaignTaskType,
+  SOCIAL_CAMPAIGN_SERVICE_FEE
 } from '@/types'
+import { 
+  getPersistedSocialCampaigns, 
+  addPersistedSocialCampaign,
+  getAllPersistedSocialCampaigns 
+} from '@/lib/persistence'
 
 // Current logged-in user (mock auth)
 export const currentUser: User = {
@@ -156,361 +168,462 @@ export const guilds: Guild[] = [
 ]
 
 // Campaigns - Real Web3 Project Marketing Campaigns
-export const campaigns: Campaign[] = [
-  {
-    id: 'camp-1',
-    name: 'Uniswap v4 Hooks Explainer',
-    description: 'Create educational content explaining Uniswap v4 Hooks and how they revolutionize DeFi. Best tutorials win big rewards.',
-    thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=300&fit=crop',
-    tags: ['EDUCATION', 'PERSONAL BRAND'],
-    type: 'InfoFi',
-    category: 'DeFi',
-    participationType: 'Onchain + Social',
-    guildId: 'guild-1',
-    guildName: 'Uniswap',
-    guildIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['youtube', 'tiktok', 'twitter'],
-    totalReward: 50000,
-    paidOut: 32500,
-    participantsCount: 342,
-    startDate: new Date('2024-11-01'),
-    endDate: new Date('2025-02-28'),
-    status: 'active',
-    featured: true,
-    forYou: true,
-    rewardToken: COMMON_TOKENS.USDC,
-    topWinners: 100,
-    userRank: 42,
-    rules: [
-      'Content must accurately explain Uniswap v4 Hooks',
-      'Include at least one practical use case example',
-      'Minimum 2 minutes for YouTube, 60 seconds for TikTok',
-      'Must link to official Uniswap documentation'
-    ],
-    howToParticipate: [
-      'Study Uniswap v4 Hooks documentation',
-      'Create educational content in your style',
-      'Post to your platform with #UniswapHooks',
-      'Submit link for verification and rewards'
-    ],
-    createdAt: new Date('2024-10-28')
-  },
-  {
-    id: 'camp-2',
-    name: 'First Swap Tutorial Challenge',
-    description: 'Help onboard new users to DeFi by creating beginner-friendly Uniswap swap tutorials.',
-    thumbnail: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=300&fit=crop',
-    tags: ['EDUCATION', 'LIFESTYLE'],
-    type: 'UGC',
-    category: 'DeFi',
-    participationType: 'Social',
-    guildId: 'guild-1',
-    guildName: 'Uniswap',
-    guildIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['tiktok', 'instagram', 'youtube'],
-    totalReward: 25000,
-    paidOut: 18200,
-    participantsCount: 456,
-    startDate: new Date('2025-01-01'),
-    endDate: new Date('2025-01-31'),
-    status: 'active',
-    featured: true,
-    rules: [
-      'Must be beginner-friendly and clear',
-      'Show actual swap process step-by-step',
-      'Include safety tips (gas fees, slippage)',
-      'Available in any language'
-    ],
-    howToParticipate: [
-      'Create a simple swap tutorial video',
-      'Focus on first-time crypto users',
-      'Post with #MyFirstSwap',
-      'Submit for reward consideration'
-    ],
-    createdAt: new Date('2024-12-28')
-  },
-  {
-    id: 'camp-3',
-    name: 'GHO Stablecoin Deep Dive',
-    description: 'Create content about Aave\'s GHO stablecoin - how it works, use cases, and why it matters for DeFi.',
-    thumbnail: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=400&h=300&fit=crop',
-    tags: ['EDUCATION', 'PERSONAL BRAND'],
-    type: 'InfoFi',
-    category: 'DeFi',
-    participationType: 'Onchain + Social',
-    guildId: 'guild-2',
-    guildName: 'Aave',
-    guildIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['youtube', 'twitter'],
-    totalReward: 35000,
-    paidOut: 12400,
-    participantsCount: 127,
-    startDate: new Date('2025-01-02'),
-    endDate: new Date('2025-03-01'),
-    status: 'active',
-    forYou: true,
-    rewardToken: COMMON_TOKENS.USDC,
-    topWinners: 50,
-    // No userRank - user hasn't participated yet
-    rules: [
-      'Explain GHO mechanics accurately',
-      'Compare with other stablecoins',
-      'Include risk disclaimers',
-      'No financial advice claims'
-    ],
-    howToParticipate: [
-      'Research GHO stablecoin mechanics',
-      'Create in-depth explainer content',
-      'Post with #GHOExplained',
-      'Submit for review'
-    ],
-    createdAt: new Date('2024-12-30')
-  },
-  {
-    id: 'camp-4',
-    name: 'DeFi Safety Tips Series',
-    description: 'Help users stay safe in DeFi. Create content about avoiding scams, managing risk, and best security practices.',
-    thumbnail: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop',
-    tags: ['EDUCATION', 'LIFESTYLE'],
-    type: 'UGC',
-    category: 'DeFi',
-    participationType: 'Social',
-    guildId: 'guild-2',
-    guildName: 'Aave',
-    guildIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['youtube', 'tiktok', 'instagram'],
-    totalReward: 20000,
-    paidOut: 8900,
-    participantsCount: 234,
-    startDate: new Date('2024-12-10'),
-    endDate: new Date('2025-02-28'),
-    status: 'active',
-    featured: true,
-    rules: [
-      'Focus on practical safety tips',
-      'Include real examples (anonymized)',
-      'Cover wallet security, phishing, smart contract risks',
-      'Suitable for all skill levels'
-    ],
-    howToParticipate: [
-      'Choose a DeFi safety topic',
-      'Create helpful educational content',
-      'Post with #DeFiSafety',
-      'Submit link for rewards'
-    ],
-    createdAt: new Date('2024-12-05')
-  },
-  {
-    id: 'camp-5',
-    name: 'Arbitrum Orbit Chain Explainer',
-    description: 'Explain how Arbitrum Orbit enables anyone to launch their own L3 chain. Technical deep-dives welcome!',
-    thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=300&fit=crop',
-    tags: ['EDUCATION', 'PERSONAL BRAND'],
-    type: 'InfoFi',
-    category: 'Education',
-    participationType: 'Onchain + Social',
-    guildId: 'guild-3',
-    guildName: 'Arbitrum',
-    guildIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['youtube', 'twitter'],
-    totalReward: 45000,
-    paidOut: 28700,
-    participantsCount: 156,
-    startDate: new Date('2024-12-01'),
-    endDate: new Date('2025-02-15'),
-    status: 'active',
-    forYou: true,
-    rewardToken: COMMON_TOKENS.ETH,
-    topWinners: 75,
-    userRank: 18,
-    rules: [
-      'Explain Orbit technology accurately',
-      'Include benefits for developers',
-      'Show real Orbit chains as examples',
-      'Technical accuracy required'
-    ],
-    howToParticipate: [
-      'Study Arbitrum Orbit documentation',
-      'Create comprehensive explainer',
-      'Post with #ArbitrumOrbit',
-      'Submit for technical review'
-    ],
-    createdAt: new Date('2024-11-28')
-  },
-  {
-    id: 'camp-6',
-    name: 'Bridge to Arbitrum Tutorial',
-    description: 'Create simple tutorials showing users how to bridge assets to Arbitrum. Help onboard the next million users!',
-    thumbnail: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop',
-    tags: ['EDUCATION', 'LIFESTYLE'],
-    type: 'UGC',
-    category: 'Education',
-    participationType: 'Social',
-    guildId: 'guild-3',
-    guildName: 'Arbitrum',
-    guildIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['youtube', 'tiktok'],
-    totalReward: 30000,
-    paidOut: 19200,
-    participantsCount: 289,
-    startDate: new Date('2024-12-15'),
-    endDate: new Date('2025-02-28'),
-    status: 'active',
-    featured: true,
-    forYou: true,
-    rules: [
-      'Show official bridge process',
-      'Explain gas fees and timing',
-      'Include security reminders',
-      'Beginner-friendly language required'
-    ],
-    howToParticipate: [
-      'Create step-by-step bridge tutorial',
-      'Use official Arbitrum bridge',
-      'Post with #BridgeToArbitrum',
-      'Submit for rewards'
-    ],
-    createdAt: new Date('2024-12-10')
-  },
-  {
-    id: 'camp-7',
-    name: 'NFT Collection Spotlight Series',
-    description: 'Showcase emerging NFT artists and collections on OpenSea. Help creators get discovered!',
-    thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=300&fit=crop',
-    tags: ['ENTERTAINMENT', 'LIFESTYLE'],
-    type: 'Clipping',
-    category: 'NFT',
-    participationType: 'Social',
-    guildId: 'guild-4',
-    guildName: 'OpenSea',
-    guildIcon: 'https://img.logo.dev/opensea.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['twitter', 'instagram', 'tiktok'],
-    totalReward: 25000,
-    paidOut: 11500,
-    participantsCount: 312,
-    startDate: new Date('2025-01-01'),
-    endDate: new Date('2025-02-28'),
-    status: 'active',
-    rules: [
-      'Feature collections with <1000 sales',
-      'Interview or spotlight the artist',
-      'Include OpenSea collection link',
-      'Original content only'
-    ],
-    howToParticipate: [
-      'Discover emerging NFT artists on OpenSea',
-      'Create spotlight content',
-      'Tag artists and post with #OpenSeaSpotlight',
-      'Submit for consideration'
-    ],
-    createdAt: new Date('2024-12-28')
-  },
-  {
-    id: 'camp-8',
-    name: 'Axie Origins Gameplay Challenge',
-    description: 'Create entertaining Axie Infinity Origins gameplay content. Show off your battles, strategies, and epic moments!',
-    thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop',
-    tags: ['GAMING', 'ENTERTAINMENT'],
-    type: 'UGC',
-    category: 'Gaming',
-    participationType: 'Onchain + Social',
-    guildId: 'guild-5',
-    guildName: 'Axie Infinity',
-    guildIcon: 'https://img.logo.dev/axieinfinity.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['youtube', 'tiktok'],
-    totalReward: 40000,
-    paidOut: 22100,
-    participantsCount: 523,
-    startDate: new Date('2024-12-01'),
-    endDate: new Date('2025-02-15'),
-    status: 'active',
-    featured: true,
-    forYou: true,
-    rules: [
-      'Feature Axie Origins gameplay',
-      'Show game download link',
-      'Include your Ronin wallet for verification',
-      'Weekly winners based on engagement'
-    ],
-    howToParticipate: [
-      'Play Axie Infinity Origins',
-      'Record exciting gameplay moments',
-      'Post with #AxieOrigins',
-      'Submit for weekly rewards'
-    ],
-    createdAt: new Date('2024-11-25')
-  },
-  {
-    id: 'camp-9',
-    name: 'Build on Lens Tutorial',
-    description: 'Create developer tutorials showing how to build social apps on Lens Protocol. Help grow the ecosystem!',
-    thumbnail: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop',
-    tags: ['EDUCATION', 'PERSONAL BRAND'],
-    type: 'InfoFi',
-    category: 'Social',
-    participationType: 'Onchain + Social',
-    guildId: 'guild-6',
-    guildName: 'Lens Protocol',
-    guildIcon: 'https://img.logo.dev/lens.xyz?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['youtube', 'twitter'],
-    totalReward: 35000,
-    paidOut: 14800,
-    participantsCount: 89,
-    startDate: new Date('2024-12-15'),
-    endDate: new Date('2025-03-01'),
-    status: 'active',
-    forYou: true,
-    rewardToken: COMMON_TOKENS.USDC,
-    topWinners: 50,
-    userRank: 8,
-    rules: [
-      'Must include working code examples',
-      'Use official Lens SDK/API',
-      'Cover a specific use case',
-      'Beginner to intermediate level'
-    ],
-    howToParticipate: [
-      'Build something on Lens Protocol',
-      'Create tutorial documenting the process',
-      'Post with #BuildOnLens',
-      'Submit GitHub repo and video'
-    ],
-    createdAt: new Date('2024-12-10')
-  },
-  {
-    id: 'camp-10',
-    name: 'Decentralized Social Explainer',
-    description: 'Help people understand why decentralized social matters. Create content explaining web3 social benefits.',
-    thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&h=300&fit=crop',
-    tags: ['EDUCATION', 'LIFESTYLE'],
-    type: 'UGC',
-    category: 'Social',
-    participationType: 'Social',
-    guildId: 'guild-6',
-    guildName: 'Lens Protocol',
-    guildIcon: 'https://img.logo.dev/lens.xyz?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    platforms: ['tiktok', 'instagram', 'twitter'],
-    totalReward: 15000,
-    paidOut: 6200,
-    participantsCount: 178,
-    startDate: new Date('2025-01-01'),
-    endDate: new Date('2025-02-15'),
-    status: 'active',
-    rules: [
-      'Explain benefits of owning your social graph',
-      'Compare with traditional social media',
-      'Keep it accessible to non-crypto users',
-      'No FUD about other platforms'
-    ],
-    howToParticipate: [
-      'Create engaging explainer content',
-      'Focus on user benefits',
-      'Post with #OwnYourSocial',
-      'Submit for rewards'
-    ],
-    createdAt: new Date('2024-12-28')
-  }
-]
+// InfoFi Campaigns organized by guild
+export const infofiCampaigns: Record<string, Campaign[]> = {
+  'guild-1': [
+    {
+      id: 'infofi-1',
+      name: 'Uniswap v4 Hooks Explainer',
+      description: 'Create educational content explaining Uniswap v4 Hooks and how they revolutionize DeFi. Best tutorials win big rewards.',
+      thumbnail: 'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'DeFi',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-1',
+      guildName: 'Uniswap',
+      guildIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'tiktok', 'twitter'],
+      totalReward: 50000,
+      paidOut: 32500,
+      participantsCount: 342,
+      startDate: new Date('2024-11-01'),
+      endDate: new Date('2025-02-28'),
+      status: 'active',
+      featured: true,
+      forYou: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 100,
+      userRank: 42,
+      rules: [
+        'Content must accurately explain Uniswap v4 Hooks',
+        'Include at least one practical use case example',
+        'Minimum 2 minutes for YouTube, 60 seconds for TikTok',
+        'Must link to official Uniswap documentation'
+      ],
+      howToParticipate: [
+        'Study Uniswap v4 Hooks documentation',
+        'Create educational content in your style',
+        'Post to your platform with #UniswapHooks',
+        'Submit link for verification and rewards'
+      ],
+      createdAt: new Date('2024-10-28')
+    },
+    {
+      id: 'infofi-2',
+      name: 'LP Strategy Masterclass',
+      description: 'Teach users advanced liquidity provision strategies on Uniswap. Cover concentrated liquidity, fee tiers, and impermanent loss.',
+      thumbnail: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'DeFi',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-1',
+      guildName: 'Uniswap',
+      guildIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'twitter'],
+      totalReward: 35000,
+      paidOut: 12000,
+      participantsCount: 156,
+      startDate: new Date('2025-01-05'),
+      endDate: new Date('2025-03-15'),
+      status: 'active',
+      featured: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 50,
+      userRank: 23,
+      rules: [
+        'Cover concentrated liquidity mechanics',
+        'Include real examples with numbers',
+        'Explain risks clearly',
+        'Show actual Uniswap interface'
+      ],
+      howToParticipate: [
+        'Research LP strategies on Uniswap',
+        'Create detailed tutorial content',
+        'Post with #UniswapLP',
+        'Submit for review'
+      ],
+      createdAt: new Date('2025-01-01')
+    }
+  ],
+  'guild-2': [
+    {
+      id: 'infofi-3',
+      name: 'GHO Stablecoin Deep Dive',
+      description: 'Create content about Aave\'s GHO stablecoin - how it works, use cases, and why it matters for DeFi.',
+      thumbnail: 'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'DeFi',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-2',
+      guildName: 'Aave',
+      guildIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'twitter'],
+      totalReward: 35000,
+      paidOut: 12400,
+      participantsCount: 127,
+      startDate: new Date('2025-01-02'),
+      endDate: new Date('2025-03-01'),
+      status: 'active',
+      forYou: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 50,
+      rules: [
+        'Explain GHO mechanics accurately',
+        'Compare with other stablecoins',
+        'Include risk disclaimers',
+        'No financial advice claims'
+      ],
+      howToParticipate: [
+        'Research GHO stablecoin mechanics',
+        'Create in-depth explainer content',
+        'Post with #GHOExplained',
+        'Submit for review'
+      ],
+      createdAt: new Date('2024-12-30')
+    },
+    {
+      id: 'infofi-4',
+      name: 'Aave V3 Features Explainer',
+      description: 'Help users understand Aave V3 features including E-Mode, isolation mode, and cross-chain portals.',
+      thumbnail: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'DeFi',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-2',
+      guildName: 'Aave',
+      guildIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'twitter', 'tiktok'],
+      totalReward: 40000,
+      paidOut: 18500,
+      participantsCount: 203,
+      startDate: new Date('2024-12-15'),
+      endDate: new Date('2025-02-28'),
+      status: 'active',
+      featured: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 75,
+      userRank: 15,
+      rules: [
+        'Cover at least one V3 feature in depth',
+        'Include practical use cases',
+        'Show actual protocol interface',
+        'Suitable for intermediate users'
+      ],
+      howToParticipate: [
+        'Study Aave V3 documentation',
+        'Create comprehensive tutorial',
+        'Post with #AaveV3',
+        'Submit for rewards'
+      ],
+      createdAt: new Date('2024-12-10')
+    }
+  ],
+  'guild-3': [
+    {
+      id: 'infofi-5',
+      name: 'Arbitrum Orbit Chain Explainer',
+      description: 'Explain how Arbitrum Orbit enables anyone to launch their own L3 chain. Technical deep-dives welcome!',
+      thumbnail: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'Education',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-3',
+      guildName: 'Arbitrum',
+      guildIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'twitter'],
+      totalReward: 45000,
+      paidOut: 28700,
+      participantsCount: 156,
+      startDate: new Date('2024-12-01'),
+      endDate: new Date('2025-02-15'),
+      status: 'active',
+      forYou: true,
+      rewardToken: COMMON_TOKENS.ETH,
+      topWinners: 75,
+      userRank: 18,
+      rules: [
+        'Explain Orbit technology accurately',
+        'Include benefits for developers',
+        'Show real Orbit chains as examples',
+        'Technical accuracy required'
+      ],
+      howToParticipate: [
+        'Study Arbitrum Orbit documentation',
+        'Create comprehensive explainer',
+        'Post with #ArbitrumOrbit',
+        'Submit for technical review'
+      ],
+      createdAt: new Date('2024-11-28')
+    },
+    {
+      id: 'infofi-6',
+      name: 'Stylus Smart Contracts Tutorial',
+      description: 'Create tutorials about Arbitrum Stylus - write smart contracts in Rust, C, and C++. Help developers discover new possibilities!',
+      thumbnail: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'Education',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-3',
+      guildName: 'Arbitrum',
+      guildIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'twitter'],
+      totalReward: 50000,
+      paidOut: 15000,
+      participantsCount: 89,
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-03-31'),
+      status: 'active',
+      featured: true,
+      rewardToken: COMMON_TOKENS.ETH,
+      topWinners: 100,
+      userRank: 5,
+      rules: [
+        'Must include working code examples',
+        'Deploy on Arbitrum testnet/mainnet',
+        'Cover a specific use case',
+        'Include GitHub repository'
+      ],
+      howToParticipate: [
+        'Learn Arbitrum Stylus',
+        'Build a working example',
+        'Create tutorial content',
+        'Post with #ArbitrumStylus'
+      ],
+      createdAt: new Date('2024-12-28')
+    }
+  ],
+  'guild-4': [
+    {
+      id: 'infofi-7',
+      name: 'NFT Market Analysis Series',
+      description: 'Create educational content analyzing NFT market trends, collection valuation, and trading strategies on OpenSea.',
+      thumbnail: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'NFT',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-4',
+      guildName: 'OpenSea',
+      guildIcon: 'https://img.logo.dev/opensea.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'twitter'],
+      totalReward: 30000,
+      paidOut: 11500,
+      participantsCount: 145,
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-02-28'),
+      status: 'active',
+      forYou: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 50,
+      userRank: 32,
+      rules: [
+        'Use real market data and analytics',
+        'Explain methodology clearly',
+        'Include risk disclaimers',
+        'Focus on educational value'
+      ],
+      howToParticipate: [
+        'Research NFT market trends',
+        'Create analytical content',
+        'Post with #NFTAnalysis',
+        'Submit for consideration'
+      ],
+      createdAt: new Date('2024-12-28')
+    },
+    {
+      id: 'infofi-8',
+      name: 'NFT Creator Guide',
+      description: 'Help artists launch their NFT collections on OpenSea. Cover minting, pricing, marketing, and community building.',
+      thumbnail: 'https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'LIFESTYLE'],
+      type: 'InfoFi',
+      category: 'NFT',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-4',
+      guildName: 'OpenSea',
+      guildIcon: 'https://img.logo.dev/opensea.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'tiktok', 'twitter'],
+      totalReward: 25000,
+      paidOut: 8200,
+      participantsCount: 198,
+      startDate: new Date('2024-12-15'),
+      endDate: new Date('2025-02-15'),
+      status: 'active',
+      featured: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 40,
+      rules: [
+        'Cover complete creator journey',
+        'Include practical tips',
+        'Show actual OpenSea interface',
+        'Beginner-friendly content'
+      ],
+      howToParticipate: [
+        'Create comprehensive creator guide',
+        'Include step-by-step instructions',
+        'Post with #NFTCreator',
+        'Submit for review'
+      ],
+      createdAt: new Date('2024-12-10')
+    }
+  ],
+  'guild-5': [
+    {
+      id: 'infofi-9',
+      name: 'Axie Origins Strategy Guide',
+      description: 'Create educational content about Axie Origins battle strategies, team compositions, and competitive gameplay.',
+      thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop',
+      tags: ['GAMING', 'EDUCATION'],
+      type: 'InfoFi',
+      category: 'Gaming',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-5',
+      guildName: 'Axie Infinity',
+      guildIcon: 'https://img.logo.dev/axieinfinity.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'tiktok'],
+      totalReward: 40000,
+      paidOut: 22100,
+      participantsCount: 423,
+      startDate: new Date('2024-12-01'),
+      endDate: new Date('2025-02-15'),
+      status: 'active',
+      featured: true,
+      forYou: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 80,
+      userRank: 45,
+      rules: [
+        'Feature Axie Origins gameplay',
+        'Explain strategies clearly',
+        'Include team composition tips',
+        'Show ranked gameplay examples'
+      ],
+      howToParticipate: [
+        'Play Axie Infinity Origins',
+        'Create strategy guide content',
+        'Post with #AxieStrategy',
+        'Submit for weekly rewards'
+      ],
+      createdAt: new Date('2024-11-25')
+    },
+    {
+      id: 'infofi-10',
+      name: 'Ronin Ecosystem Explainer',
+      description: 'Help users understand the Ronin blockchain ecosystem - wallets, bridges, and DeFi opportunities beyond gaming.',
+      thumbnail: 'https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'Gaming',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-5',
+      guildName: 'Axie Infinity',
+      guildIcon: 'https://img.logo.dev/axieinfinity.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'twitter'],
+      totalReward: 30000,
+      paidOut: 9800,
+      participantsCount: 112,
+      startDate: new Date('2025-01-05'),
+      endDate: new Date('2025-03-01'),
+      status: 'active',
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 50,
+      rules: [
+        'Cover Ronin ecosystem comprehensively',
+        'Include wallet setup guides',
+        'Explain bridge process',
+        'Highlight DeFi opportunities'
+      ],
+      howToParticipate: [
+        'Research Ronin ecosystem',
+        'Create educational content',
+        'Post with #RoninEcosystem',
+        'Submit for review'
+      ],
+      createdAt: new Date('2025-01-01')
+    }
+  ],
+  'guild-6': [
+    {
+      id: 'infofi-11',
+      name: 'Build on Lens Tutorial',
+      description: 'Create developer tutorials showing how to build social apps on Lens Protocol. Help grow the ecosystem!',
+      thumbnail: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'PERSONAL BRAND'],
+      type: 'InfoFi',
+      category: 'Social',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-6',
+      guildName: 'Lens Protocol',
+      guildIcon: 'https://img.logo.dev/lens.xyz?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['youtube', 'twitter'],
+      totalReward: 35000,
+      paidOut: 14800,
+      participantsCount: 89,
+      startDate: new Date('2024-12-15'),
+      endDate: new Date('2025-03-01'),
+      status: 'active',
+      forYou: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 50,
+      userRank: 8,
+      rules: [
+        'Must include working code examples',
+        'Use official Lens SDK/API',
+        'Cover a specific use case',
+        'Beginner to intermediate level'
+      ],
+      howToParticipate: [
+        'Build something on Lens Protocol',
+        'Create tutorial documenting the process',
+        'Post with #BuildOnLens',
+        'Submit GitHub repo and video'
+      ],
+      createdAt: new Date('2024-12-10')
+    },
+    {
+      id: 'infofi-12',
+      name: 'Decentralized Social Explainer',
+      description: 'Help people understand why decentralized social matters. Create content explaining web3 social benefits and Lens Protocol.',
+      thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=400&h=300&fit=crop',
+      tags: ['EDUCATION', 'LIFESTYLE'],
+      type: 'InfoFi',
+      category: 'Social',
+      participationType: 'Onchain + Social',
+      guildId: 'guild-6',
+      guildName: 'Lens Protocol',
+      guildIcon: 'https://img.logo.dev/lens.xyz?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
+      platforms: ['tiktok', 'youtube', 'twitter'],
+      totalReward: 25000,
+      paidOut: 8200,
+      participantsCount: 156,
+      startDate: new Date('2025-01-01'),
+      endDate: new Date('2025-02-28'),
+      status: 'active',
+      featured: true,
+      rewardToken: COMMON_TOKENS.USDC,
+      topWinners: 40,
+      rules: [
+        'Explain benefits of owning your social graph',
+        'Compare with traditional social media',
+        'Keep it accessible to non-crypto users',
+        'Highlight Lens Protocol features'
+      ],
+      howToParticipate: [
+        'Create engaging explainer content',
+        'Focus on user benefits',
+        'Post with #OwnYourSocial',
+        'Submit for rewards'
+      ],
+      createdAt: new Date('2024-12-28')
+    }
+  ]
+}
 
 // Guild members for guild-1
 export const guildMembers: GuildMember[] = [
@@ -1092,14 +1205,17 @@ export const activityData: ActivityData[] = [
 
 // Recent reward payouts for the ticker - shows users who earned
 export const recentPayouts: RewardPayout[] = [
-  { id: 'payout-1', odsa: 'user-6', username: 'defi_educator', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=defieducator', guildId: 'guild-1', guildName: 'Uniswap', guildIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'v4 Hooks Explainer', amount: 5200, timestamp: new Date('2025-01-09T10:30:00') },
-  { id: 'payout-2', odsa: 'user-2', username: 'crypto_sarah', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=cryptosarah', guildId: 'guild-3', guildName: 'Arbitrum', guildIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Bridge Tutorial', amount: 8400, timestamp: new Date('2025-01-09T09:15:00') },
-  { id: 'payout-3', odsa: 'user-5', username: 'gaming_legend', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=gaminglegend', guildId: 'guild-5', guildName: 'Axie Infinity', guildIcon: 'https://img.logo.dev/axieinfinity.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Origins Gameplay', amount: 3100, timestamp: new Date('2025-01-09T08:45:00') },
-  { id: 'payout-4', odsa: 'user-3', username: 'yield_hunter', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=yieldhunter', guildId: 'guild-2', guildName: 'Aave', guildIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'GHO Deep Dive', amount: 2800, timestamp: new Date('2025-01-09T07:20:00') },
-  { id: 'payout-5', odsa: 'user-8', username: 'nft_whale', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=nftwhale', guildId: 'guild-4', guildName: 'OpenSea', guildIcon: 'https://img.logo.dev/opensea.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Collection Spotlight', amount: 1500, timestamp: new Date('2025-01-08T22:30:00') },
-  { id: 'payout-6', odsa: 'user-9', username: 'web3_builder', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=web3builder', guildId: 'guild-6', guildName: 'Lens Protocol', guildIcon: 'https://img.logo.dev/lens.xyz?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Build on Lens', amount: 950, timestamp: new Date('2025-01-08T18:15:00') },
-  { id: 'payout-7', odsa: 'user-1', username: 'clipmaster_pro', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipmaster', guildId: 'guild-1', guildName: 'Uniswap', guildIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'First Swap Tutorial', amount: 4200, timestamp: new Date('2025-01-08T14:00:00') },
-  { id: 'payout-8', odsa: 'user-4', username: 'l2_maxi', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=l2maxi', guildId: 'guild-3', guildName: 'Arbitrum', guildIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Orbit Explainer', amount: 6700, timestamp: new Date('2025-01-08T11:30:00') },
+  // Token rewards
+  { id: 'payout-1', odsa: 'user-6', username: 'defi_educator', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=defieducator', guildId: 'guild-1', guildName: 'Uniswap', guildIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'v4 Hooks Explainer', amount: 325, timestamp: new Date('2025-01-09T10:30:00'), rewardType: 'token', tokenSymbol: 'USDC', tokenIcon: '/tokens/usdc.svg' },
+  { id: 'payout-2', odsa: 'user-2', username: 'crypto_sarah', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=cryptosarah', guildId: 'guild-3', guildName: 'Arbitrum', guildIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Bridge Tutorial', amount: 840, timestamp: new Date('2025-01-09T09:15:00'), rewardType: 'token', tokenSymbol: 'ETH', tokenIcon: '/tokens/eth.svg' },
+  // Points rewards
+  { id: 'payout-3', odsa: 'user-5', username: 'gaming_legend', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=gaminglegend', guildId: 'guild-5', guildName: 'Axie Infinity', guildIcon: 'https://img.logo.dev/axieinfinity.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Origins Gameplay', amount: 3100, timestamp: new Date('2025-01-09T08:45:00'), rewardType: 'points', pointsName: 'AXS Points' },
+  { id: 'payout-4', odsa: 'user-3', username: 'yield_hunter', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=yieldhunter', guildId: 'guild-2', guildName: 'Aave', guildIcon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'GHO Deep Dive', amount: 150, timestamp: new Date('2025-01-09T07:20:00'), rewardType: 'points', pointsName: 'AURA Points' },
+  // Mixed
+  { id: 'payout-5', odsa: 'user-8', username: 'nft_whale', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=nftwhale', guildId: 'guild-4', guildName: 'OpenSea', guildIcon: 'https://img.logo.dev/opensea.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Collection Spotlight', amount: 1500, timestamp: new Date('2025-01-08T22:30:00'), rewardType: 'token', tokenSymbol: 'USDC', tokenIcon: '/tokens/usdc.svg' },
+  { id: 'payout-6', odsa: 'user-9', username: 'web3_builder', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=web3builder', guildId: 'guild-6', guildName: 'Lens Protocol', guildIcon: 'https://img.logo.dev/lens.xyz?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Build on Lens', amount: 950, timestamp: new Date('2025-01-08T18:15:00'), rewardType: 'points', pointsName: 'Lens Points' },
+  { id: 'payout-7', odsa: 'user-1', username: 'clipmaster_pro', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=clipmaster', guildId: 'guild-1', guildName: 'Uniswap', guildIcon: 'https://img.logo.dev/uniswap.org?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'First Swap Tutorial', amount: 420, timestamp: new Date('2025-01-08T14:00:00'), rewardType: 'token', tokenSymbol: 'USDC', tokenIcon: '/tokens/usdc.svg' },
+  { id: 'payout-8', odsa: 'user-4', username: 'l2_maxi', avatar: 'https://api.dicebear.com/7.x/notionists-neutral/svg?seed=l2maxi', guildId: 'guild-3', guildName: 'Arbitrum', guildIcon: 'https://img.logo.dev/arbitrum.io?token=pk_CqDF3xGeT3OFezZ1mvTe3Q', campaignName: 'Orbit Explainer', amount: 2500, timestamp: new Date('2025-01-08T11:30:00'), rewardType: 'points', pointsName: 'ARB Points' },
 ]
 
 // Helper functions
@@ -1107,12 +1223,17 @@ export function getGuildById(id: string): Guild | undefined {
   return guilds.find(g => g.id === id)
 }
 
+// Helper to get all campaigns flattened from all guilds
+function getAllCampaigns(): Campaign[] {
+  return Object.values(infofiCampaigns).flat()
+}
+
 export function getCampaignById(id: string): Campaign | undefined {
-  return campaigns.find(c => c.id === id)
+  return getAllCampaigns().find(c => c.id === id)
 }
 
 export function getCampaignsByGuild(guildId: string): Campaign[] {
-  return campaigns.filter(c => c.guildId === guildId)
+  return infofiCampaigns[guildId] || []
 }
 
 export function getGuildAnnouncements(guildId: string): Announcement[] {
@@ -1219,15 +1340,15 @@ export function getUserCampaignStats(campaignId: string): UserCampaignStats {
 }
 
 export function getFeaturedCampaigns(): Campaign[] {
-  return campaigns.filter(c => c.featured && c.status === 'active')
+  return getAllCampaigns().filter(c => c.featured && c.status === 'active')
 }
 
 export function getForYouCampaigns(): Campaign[] {
-  return campaigns.filter(c => c.forYou && c.status === 'active')
+  return getAllCampaigns().filter(c => c.forYou && c.status === 'active')
 }
 
 export function getActiveCampaigns(): Campaign[] {
-  return campaigns.filter(c => c.status === 'active')
+  return getAllCampaigns().filter(c => c.status === 'active')
 }
 
 export function getTotalRewardsDistributed(): number {
@@ -1253,11 +1374,16 @@ export function getGuildTwitterPosts(guildId: string): TwitterPost[] {
 }
 
 export function getCampaignsByType(guildId: string, type: CampaignType): Campaign[] {
-  return campaigns.filter(c => c.guildId === guildId && c.type === type)
+  // Since all campaigns are now InfoFi, return all guild campaigns for InfoFi type
+  if (type === 'InfoFi') {
+    return infofiCampaigns[guildId] || []
+  }
+  // No campaigns for other types
+  return []
 }
 
 export function getInfoFiCampaigns(guildId: string): Campaign[] {
-  return getCampaignsByType(guildId, 'InfoFi')
+  return infofiCampaigns[guildId] || []
 }
 
 // Mock chat messages per guild
@@ -1585,7 +1711,52 @@ export function getMemberById(memberId: string): GuildMember | undefined {
 // ============================================
 
 export const storeApps: StoreApp[] = [
-  // ===== VIRALITY CATEGORY =====
+  // ===== CAMPAIGN APPS =====
+  {
+    id: 'app-social-tasks',
+    slug: 'social-tasks',
+    name: 'Social Tasks',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=socialtasks&backgroundColor=3b82f6&shape1Color=2563eb&shape2Color=1d4ed8',
+    shortDescription: 'Run targeted token-based campaigns for follow, tweets, replies.',
+    fullDescription: `Social Tasks enables guilds to run targeted social media campaigns that reward users for engagement actions like follows, tweets, replies, and retweets.
+
+Key features:
+• Create follow, tweet, reply, and retweet campaigns
+• Token-based rewards with instant payouts
+• Auto-verification of social actions
+• Targeting options for specific audiences
+• Real-time campaign analytics
+
+Perfect for growing your social presence and rewarding community engagement with tokens.`,
+    category: 'Campaigns',
+    developer: {
+      name: 'Airaa',
+      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
+      verified: true
+    },
+    stats: {
+      reviews: 89,
+      rating: 4.9,
+      weeklyInstalls: 6200,
+      totalInstalls: 85000,
+      monthlyActiveUsers: 520000
+    },
+    screenshots: [
+      'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1562577309-4932fdd64cd1?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1432888622747-4eb9a8efeb07?w=800&h=500&fit=crop'
+    ],
+    features: [
+      'Create follow, tweet, reply, and retweet campaigns',
+      'Token-based rewards with instant payouts',
+      'Auto-verification of social actions',
+      'Targeting options for specific audiences',
+      'Real-time campaign analytics'
+    ],
+    color: '#3b82f6',
+    isFree: true,
+    isFeatured: true
+  },
   {
     id: 'app-infofi',
     slug: 'infofi',
@@ -1593,8 +1764,6 @@ export const storeApps: StoreApp[] = [
     icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=infofi&backgroundColor=22c55e&shape1Color=16a34a&shape2Color=15803d',
     shortDescription: 'Drive education-based viral reach through creator campaigns.',
     fullDescription: `InfoFi enables guilds to run educational content campaigns that reward creators for producing high-quality explainer content about your protocol or product.
-
-Create live chat rooms where members can talk, share feedback, and stay engaged.
 
 Key features:
 • Real-time content tracking with engagement metrics
@@ -1604,7 +1773,7 @@ Key features:
 • Automated payout distribution
 
 Perfect for protocols looking to educate their community and drive organic awareness through authentic creator content.`,
-    category: 'Virality',
+    category: 'Campaigns',
     developer: {
       name: 'Airaa',
       icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
@@ -1634,270 +1803,6 @@ Perfect for protocols looking to educate their community and drive organic aware
     isFeatured: true
   },
   {
-    id: 'app-faucet',
-    slug: 'faucet',
-    name: 'Faucet',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=faucet&backgroundColor=06b6d4&shape1Color=0891b2&shape2Color=0e7490',
-    shortDescription: 'Distribute tokens to verified community members.',
-    fullDescription: `Faucet allows guilds to distribute tokens to verified community members as rewards for completing tasks, engagement, or as part of community growth initiatives.
-
-Key features:
-• Sybil-resistant verification with multiple identity providers
-• Configurable claim limits and cooldown periods
-• Multi-token support across EVM chains
-• Integration with social verification
-• Detailed analytics on distribution patterns
-
-Ideal for onboarding new users and incentivizing early community participation.`,
-    category: 'Virality',
-    developer: {
-      name: 'Airaa',
-      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
-      verified: true
-    },
-    stats: {
-      reviews: 23,
-      rating: 4.5,
-      weeklyInstalls: 2340,
-      totalInstalls: 18500,
-      monthlyActiveUsers: 89000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Sybil-resistant verification with multiple identity providers',
-      'Configurable claim limits and cooldown periods',
-      'Multi-token support across EVM chains',
-      'Integration with social verification',
-      'Detailed analytics on distribution patterns'
-    ],
-    color: '#06b6d4',
-    isFree: true,
-    isNew: true
-  },
-  {
-    id: 'app-affiliate',
-    slug: 'affiliate',
-    name: 'Affiliate',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=affiliate&backgroundColor=f59e0b&shape1Color=d97706&shape2Color=b45309',
-    shortDescription: 'Track referral links and reward affiliates automatically.',
-    fullDescription: `Affiliate enables guilds to create trackable referral programs with custom commission structures and automated payouts.
-
-Key features:
-• Unique referral link generation
-• Real-time conversion tracking
-• Tiered commission structures
-• Automated USDC/token payouts
-• Fraud detection and prevention
-
-Perfect for growing your protocol through incentivized word-of-mouth marketing.`,
-    category: 'Virality',
-    developer: {
-      name: 'Airaa',
-      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
-      verified: true
-    },
-    stats: {
-      reviews: 31,
-      rating: 4.6,
-      weeklyInstalls: 1890,
-      totalInstalls: 24300,
-      monthlyActiveUsers: 156000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Unique referral link generation',
-      'Real-time conversion tracking',
-      'Tiered commission structures',
-      'Automated USDC/token payouts',
-      'Fraud detection and prevention'
-    ],
-    color: '#f59e0b',
-    isFree: true
-  },
-  {
-    id: 'app-referral',
-    slug: 'referral',
-    name: 'Referral',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=referral&backgroundColor=8b5cf6&shape1Color=7c3aed&shape2Color=6d28d9',
-    shortDescription: 'Create invite programs with milestone-based rewards.',
-    fullDescription: `Referral helps guilds build viral growth through gamified invite programs with milestone rewards and leaderboards.
-
-Key features:
-• Gamified milestone system
-• Real-time invite leaderboards
-• Custom reward tiers
-• Social sharing integrations
-• Anti-gaming protections
-
-Drive exponential growth through your existing community.`,
-    category: 'Virality',
-    developer: {
-      name: 'Airaa',
-      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
-      verified: true
-    },
-    stats: {
-      reviews: 18,
-      rating: 4.4,
-      weeklyInstalls: 1245,
-      totalInstalls: 15600,
-      monthlyActiveUsers: 78000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Gamified milestone system',
-      'Real-time invite leaderboards',
-      'Custom reward tiers',
-      'Social sharing integrations',
-      'Anti-gaming protections'
-    ],
-    color: '#8b5cf6',
-    isFree: true
-  },
-
-  // ===== ONCHAIN CATEGORY =====
-  {
-    id: 'app-liquidity',
-    slug: 'liquidity',
-    name: 'Liquidity',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=liquidity&backgroundColor=3b82f6&shape1Color=2563eb&shape2Color=1d4ed8',
-    shortDescription: 'Incentivize liquidity provision with reward campaigns.',
-    fullDescription: `Liquidity enables guilds to run LP incentive programs that reward users for providing liquidity to designated pools.
-
-Key features:
-• Multi-DEX support (Uniswap, Curve, Balancer)
-• Time-weighted reward calculations
-• Boosted rewards for lock-ups
-• Real-time TVL tracking
-• Automated reward distribution
-
-Attract and retain liquidity providers with competitive incentive programs.`,
-    category: 'Onchain',
-    developer: {
-      name: 'Airaa',
-      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
-      verified: true
-    },
-    stats: {
-      reviews: 56,
-      rating: 4.9,
-      weeklyInstalls: 3420,
-      totalInstalls: 38900,
-      monthlyActiveUsers: 234000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Multi-DEX support (Uniswap, Curve, Balancer)',
-      'Time-weighted reward calculations',
-      'Boosted rewards for lock-ups',
-      'Real-time TVL tracking',
-      'Automated reward distribution'
-    ],
-    color: '#3b82f6',
-    isFree: true,
-    isFeatured: true
-  },
-  {
-    id: 'app-token-holding',
-    slug: 'token-holding',
-    name: 'Token Holding',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=tokenholding&backgroundColor=eab308&shape1Color=ca8a04&shape2Color=a16207',
-    shortDescription: 'Reward long-term holders with tiered incentives.',
-    fullDescription: `Token Holding rewards users who hold your token over time with increasing benefits and exclusive access.
-
-Key features:
-• Snapshot-based balance tracking
-• Tiered reward multipliers
-• Holder leaderboards
-• Exclusive access gating
-• Diamond hands achievements
-
-Build a loyal community of long-term believers.`,
-    category: 'Onchain',
-    developer: {
-      name: 'Airaa',
-      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
-      verified: true
-    },
-    stats: {
-      reviews: 29,
-      rating: 4.5,
-      weeklyInstalls: 1780,
-      totalInstalls: 21400,
-      monthlyActiveUsers: 145000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Snapshot-based balance tracking',
-      'Tiered reward multipliers',
-      'Holder leaderboards',
-      'Exclusive access gating',
-      'Diamond hands achievements'
-    ],
-    color: '#eab308',
-    isFree: true
-  },
-  {
-    id: 'app-lending',
-    slug: 'lending-borrowing',
-    name: 'Lending/Borrowing',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=lending&backgroundColor=06b6d4&shape1Color=0891b2&shape2Color=0e7490',
-    shortDescription: 'Incentivize DeFi participation in lending protocols.',
-    fullDescription: `Lending/Borrowing rewards users for active participation in supported lending protocols.
-
-Key features:
-• Multi-protocol support (Aave, Compound, Morpho)
-• Supply and borrow tracking
-• Interest rate boosters
-• Health factor monitoring
-• Cross-chain aggregation
-
-Grow protocol TVL through targeted incentive campaigns.`,
-    category: 'Onchain',
-    developer: {
-      name: 'Airaa',
-      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
-      verified: true
-    },
-    stats: {
-      reviews: 34,
-      rating: 4.7,
-      weeklyInstalls: 2150,
-      totalInstalls: 28700,
-      monthlyActiveUsers: 189000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Multi-protocol support (Aave, Compound, Morpho)',
-      'Supply and borrow tracking',
-      'Interest rate boosters',
-      'Health factor monitoring',
-      'Cross-chain aggregation'
-    ],
-    color: '#06b6d4',
-    isFree: true
-  },
-
-  // ===== VIDEO CATEGORY =====
-  {
     id: 'app-clipping',
     slug: 'clipping',
     name: 'Clipping',
@@ -1913,7 +1818,7 @@ Key features:
 • Batch approval tools
 
 Turn your content library into viral short-form gold.`,
-    category: 'Video',
+    category: 'Campaigns',
     developer: {
       name: 'Airaa',
       icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
@@ -1957,7 +1862,7 @@ Key features:
 • Creator CRM integration
 
 Harness the creativity of your community at scale.`,
-    category: 'Video',
+    category: 'Campaigns',
     developer: {
       name: 'Airaa',
       icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
@@ -1984,271 +1889,47 @@ Harness the creativity of your community at scale.`,
     color: '#f97316',
     isFree: true
   },
-
-  // ===== AIRDROPS CATEGORY =====
   {
-    id: 'app-token-airdrop',
-    slug: 'token-airdrop',
-    name: 'Token Airdrop',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=tokenairdrop&backgroundColor=f97316&shape1Color=ea580c&shape2Color=c2410c',
-    shortDescription: 'Distribute ERC-20 tokens to qualified recipients.',
-    fullDescription: `Token Airdrop enables efficient distribution of ERC-20 tokens to qualified community members based on custom criteria.
+    id: 'app-affiliate',
+    slug: 'affiliate',
+    name: 'Affiliate',
+    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=affiliate&backgroundColor=f59e0b&shape1Color=d97706&shape2Color=b45309',
+    shortDescription: 'Track referral links and reward affiliates automatically.',
+    fullDescription: `Affiliate enables guilds to create trackable referral programs with custom commission structures and automated payouts.
 
 Key features:
-• CSV import and criteria builder
-• Gas-optimized batch transfers
-• Claim portal with eligibility checker
-• Anti-sybil verification
-• Vesting schedule support
+• Unique referral link generation
+• Real-time conversion tracking
+• Tiered commission structures
+• Automated USDC/token payouts
+• Fraud detection and prevention
 
-Execute airdrops with precision and security.`,
-    category: 'Airdrops',
+Perfect for growing your protocol through incentivized word-of-mouth marketing.`,
+    category: 'Campaigns',
     developer: {
       name: 'Airaa',
       icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
       verified: true
     },
     stats: {
-      reviews: 89,
-      rating: 4.9,
-      weeklyInstalls: 5620,
-      totalInstalls: 78400,
-      monthlyActiveUsers: 456000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'CSV import and criteria builder',
-      'Gas-optimized batch transfers',
-      'Claim portal with eligibility checker',
-      'Anti-sybil verification',
-      'Vesting schedule support'
-    ],
-    color: '#f97316',
-    isFree: true,
-    isFeatured: true
-  },
-  {
-    id: 'app-nft-airdrop',
-    slug: 'nft-airdrop',
-    name: 'NFT Airdrop',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=nftairdrop&backgroundColor=a855f7&shape1Color=9333ea&shape2Color=7e22ce',
-    shortDescription: 'Distribute NFTs to your community members.',
-    fullDescription: `NFT Airdrop enables guilds to distribute collectibles and membership NFTs to community members.
-
-Key features:
-• ERC-721 and ERC-1155 support
-• Dynamic metadata generation
-• Claim page with wallet connection
-• Snapshot-based eligibility
-• Reveal mechanics
-
-Reward your community with exclusive digital collectibles.`,
-    category: 'Airdrops',
-    developer: {
-      name: 'Airaa',
-      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
-      verified: true
-    },
-    stats: {
-      reviews: 41,
-      rating: 4.7,
-      weeklyInstalls: 2890,
-      totalInstalls: 34500,
-      monthlyActiveUsers: 198000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1620321023374-d1a68fbc720d?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'ERC-721 and ERC-1155 support',
-      'Dynamic metadata generation',
-      'Claim page with wallet connection',
-      'Snapshot-based eligibility',
-      'Reveal mechanics'
-    ],
-    color: '#a855f7',
-    isFree: true,
-    isNew: true
-  },
-
-  // ===== TOOLS CATEGORY =====
-  {
-    id: 'app-outreach',
-    slug: 'outreach',
-    name: 'Outreach',
-    icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=outreach&backgroundColor=8b5cf6&shape1Color=7c3aed&shape2Color=6d28d9',
-    shortDescription: 'Run community outreach and engagement campaigns.',
-    fullDescription: `Outreach helps guilds coordinate community outreach efforts with task-based rewards.
-
-Key features:
-• Task board with assignments
-• Social engagement tracking
-• Community ambassador program
-• Progress dashboards
-• Team coordination tools
-
-Mobilize your community for coordinated growth initiatives.`,
-    category: 'Tools',
-    developer: {
-      name: 'Airaa',
-      icon: 'https://api.dicebear.com/7.x/shapes/svg?seed=airaa',
-      verified: true
-    },
-    stats: {
-      reviews: 25,
-      rating: 4.4,
-      weeklyInstalls: 1560,
-      totalInstalls: 19800,
-      monthlyActiveUsers: 112000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1552581234-26160f608093?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Task board with assignments',
-      'Social engagement tracking',
-      'Community ambassador program',
-      'Progress dashboards',
-      'Team coordination tools'
-    ],
-    color: '#8b5cf6',
-    isFree: true
-  },
-
-  // ===== DAPPS CATEGORY =====
-  {
-    id: 'app-jumper',
-    slug: 'jumper',
-    name: 'Jumper',
-    icon: 'https://img.logo.dev/jumper.exchange?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    shortDescription: 'Incentivize cross-chain bridging through Jumper.',
-    fullDescription: `Jumper integration allows guilds to reward users for bridging assets across chains using the Jumper aggregator.
-
-Key features:
-• Bridge transaction tracking
-• Volume-based rewards
-• Multi-chain support
-• Route optimization insights
-• Leaderboard competitions
-
-Drive cross-chain adoption with targeted incentives.`,
-    category: 'Dapps',
-    developer: {
-      name: 'Jumper',
-      icon: 'https://img.logo.dev/jumper.exchange?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-      verified: true
-    },
-    stats: {
-      reviews: 38,
+      reviews: 31,
       rating: 4.6,
-      weeklyInstalls: 2340,
-      totalInstalls: 31200,
-      monthlyActiveUsers: 187000
+      weeklyInstalls: 1890,
+      totalInstalls: 24300,
+      monthlyActiveUsers: 156000
     },
     screenshots: [
-      'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=800&h=500&fit=crop'
+      'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop',
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=500&fit=crop'
     ],
     features: [
-      'Bridge transaction tracking',
-      'Volume-based rewards',
-      'Multi-chain support',
-      'Route optimization insights',
-      'Leaderboard competitions'
+      'Unique referral link generation',
+      'Real-time conversion tracking',
+      'Tiered commission structures',
+      'Automated USDC/token payouts',
+      'Fraud detection and prevention'
     ],
-    color: '#14b8a6',
-    isFree: true
-  },
-  {
-    id: 'app-aave',
-    slug: 'aave',
-    name: 'Aave',
-    icon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    shortDescription: 'Reward Aave protocol participation and engagement.',
-    fullDescription: `Aave integration enables guilds to reward users for lending and borrowing on Aave protocol.
-
-Key features:
-• Supply and borrow tracking
-• GHO stablecoin integration
-• Multi-market support
-• Health factor rewards
-• Protocol governance participation
-
-Incentivize active Aave usage across your community.`,
-    category: 'Dapps',
-    developer: {
-      name: 'Aave',
-      icon: 'https://img.logo.dev/aave.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-      verified: true
-    },
-    stats: {
-      reviews: 62,
-      rating: 4.8,
-      weeklyInstalls: 3890,
-      totalInstalls: 48700,
-      monthlyActiveUsers: 298000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1642790106117-e829e14a795f?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Supply and borrow tracking',
-      'GHO stablecoin integration',
-      'Multi-market support',
-      'Health factor rewards',
-      'Protocol governance participation'
-    ],
-    color: '#B6509E',
-    isFree: true,
-    isFeatured: true
-  },
-  {
-    id: 'app-polymarket',
-    slug: 'polymarket',
-    name: 'Polymarket',
-    icon: 'https://img.logo.dev/polymarket.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-    shortDescription: 'Incentivize prediction market participation.',
-    fullDescription: `Polymarket integration enables guilds to reward users for participating in prediction markets.
-
-Key features:
-• Position tracking
-• Volume-based rewards
-• Market creation incentives
-• Accuracy leaderboards
-• Event-based campaigns
-
-Engage your community through prediction markets.`,
-    category: 'Dapps',
-    developer: {
-      name: 'Polymarket',
-      icon: 'https://img.logo.dev/polymarket.com?token=pk_CqDF3xGeT3OFezZ1mvTe3Q',
-      verified: true
-    },
-    stats: {
-      reviews: 28,
-      rating: 4.5,
-      weeklyInstalls: 1780,
-      totalInstalls: 22400,
-      monthlyActiveUsers: 134000
-    },
-    screenshots: [
-      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=500&fit=crop',
-      'https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=800&h=500&fit=crop'
-    ],
-    features: [
-      'Position tracking',
-      'Volume-based rewards',
-      'Market creation incentives',
-      'Accuracy leaderboards',
-      'Event-based campaigns'
-    ],
-    color: '#3b82f6',
+    color: '#f59e0b',
     isFree: true
   }
 ]
@@ -3421,4 +3102,354 @@ export function getAdminMembersByGuild(guildId: string): AdminMember[] {
   // In a real app, members would be associated with specific guilds
   // For mock purposes, return all members
   return adminMembers
+}
+
+// ============================================
+// Social Campaigns (Admin-Created Campaigns)
+// ============================================
+
+/**
+ * Default empty social campaigns by guild (used as fallback)
+ */
+const defaultSocialCampaigns: Record<string, SocialCampaign[]> = {
+  'guild-1': [],
+  'guild-2': [],
+  'guild-3': [],
+  'guild-4': [],
+  'guild-5': [],
+  'guild-6': []
+}
+
+/**
+ * In-memory cache for social campaigns (merged from persistence + defaults)
+ * This gets populated from localStorage on first access
+ */
+let socialCampaignsCache: Record<string, SocialCampaign[]> | null = null
+
+/**
+ * Get the merged social campaigns (persisted + defaults)
+ * Lazily initializes from localStorage on first call
+ */
+function getMergedSocialCampaigns(): Record<string, SocialCampaign[]> {
+  if (socialCampaignsCache !== null) {
+    return socialCampaignsCache
+  }
+  
+  // Initialize cache with defaults
+  socialCampaignsCache = { ...defaultSocialCampaigns }
+  
+  // Merge in persisted campaigns (only in browser)
+  if (typeof window !== 'undefined') {
+    const persisted = getAllPersistedSocialCampaigns()
+    for (const [guildId, campaigns] of Object.entries(persisted)) {
+      if (!socialCampaignsCache[guildId]) {
+        socialCampaignsCache[guildId] = []
+      }
+      // Add persisted campaigns (they have unique IDs so no deduplication needed)
+      socialCampaignsCache[guildId] = [...socialCampaignsCache[guildId], ...campaigns]
+    }
+  }
+  
+  return socialCampaignsCache
+}
+
+/**
+ * Legacy export for backwards compatibility
+ * @deprecated Use getSocialCampaigns() instead
+ */
+export const socialCampaigns: Record<string, SocialCampaign[]> = new Proxy(
+  {} as Record<string, SocialCampaign[]>,
+  {
+    get(_, prop: string) {
+      return getMergedSocialCampaigns()[prop] || []
+    },
+    set(_, prop: string, value: SocialCampaign[]) {
+      const merged = getMergedSocialCampaigns()
+      merged[prop] = value
+      return true
+    },
+    ownKeys() {
+      return Object.keys(getMergedSocialCampaigns())
+    },
+    getOwnPropertyDescriptor(_, prop) {
+      const merged = getMergedSocialCampaigns()
+      if (prop in merged) {
+        return { enumerable: true, configurable: true, value: merged[prop as string] }
+      }
+      return undefined
+    }
+  }
+)
+
+/**
+ * Get all social campaigns for a guild
+ */
+export function getSocialCampaigns(guildId: string): SocialCampaign[] {
+  return getMergedSocialCampaigns()[guildId] || []
+}
+
+/**
+ * Get active social campaigns for a guild
+ */
+export function getActiveSocialCampaigns(guildId: string): SocialCampaign[] {
+  return getSocialCampaigns(guildId).filter(c => c.status === 'active')
+}
+
+/**
+ * Get a single social campaign by ID
+ */
+export function getSocialCampaignById(campaignId: string): SocialCampaign | undefined {
+  const merged = getMergedSocialCampaigns()
+  for (const guildCampaigns of Object.values(merged)) {
+    const found = guildCampaigns.find(c => c.id === campaignId)
+    if (found) return found
+  }
+  return undefined
+}
+
+/**
+ * Calculate campaign totals
+ */
+export function calculateCampaignTotals(rewardPool: number, totalWinners: number): {
+  perWinnerReward: number
+  serviceFee: number
+  totalPayable: number
+} {
+  const perWinnerReward = totalWinners > 0 ? rewardPool / totalWinners : 0
+  const serviceFee = rewardPool * SOCIAL_CAMPAIGN_SERVICE_FEE
+  const totalPayable = rewardPool + serviceFee
+  
+  return { perWinnerReward, serviceFee, totalPayable }
+}
+
+/**
+ * Create a new social campaign
+ * Persists to localStorage for demo mode
+ */
+export function createSocialCampaign(
+  guildId: string,
+  name: string,
+  tasks: SocialCampaignTask[],
+  distributionMethod: SocialDistributionMethod,
+  blockchain: string,
+  token: string,
+  rewardPool: number,
+  totalWinners: number,
+  eligibilityFilters?: SocialCampaignEligibility,
+  kolList?: string[],
+  kolRewardPerUser?: number,
+  endDate?: Date
+): SocialCampaign {
+  const { perWinnerReward, serviceFee, totalPayable } = calculateCampaignTotals(rewardPool, totalWinners)
+  
+  const campaign: SocialCampaign = {
+    id: `social-${Date.now()}`,
+    guildId,
+    name,
+    tasks,
+    distributionMethod,
+    blockchain,
+    token,
+    rewardPool,
+    totalWinners,
+    perWinnerReward,
+    serviceFee,
+    totalPayable,
+    eligibilityFilters,
+    kolList,
+    kolRewardPerUser,
+    status: 'active',
+    createdAt: new Date(),
+    endDate,
+    participantsCount: 0,
+    completedCount: 0,
+    rewardsClaimedCount: 0
+  }
+  
+  // Add to in-memory cache
+  const merged = getMergedSocialCampaigns()
+  if (!merged[guildId]) {
+    merged[guildId] = []
+  }
+  merged[guildId].push(campaign)
+  
+  // Persist to localStorage
+  addPersistedSocialCampaign(campaign)
+  
+  return campaign
+}
+
+/**
+ * Get campaign analytics summary
+ */
+export function getSocialCampaignAnalytics(guildId: string): {
+  totalCampaigns: number
+  activeCampaigns: number
+  totalRewardsDistributed: number
+  totalParticipants: number
+} {
+  const campaigns = getSocialCampaigns(guildId)
+  
+  return {
+    totalCampaigns: campaigns.length,
+    activeCampaigns: campaigns.filter(c => c.status === 'active').length,
+    totalRewardsDistributed: campaigns
+      .filter(c => c.status === 'completed')
+      .reduce((sum, c) => sum + (c.rewardsClaimedCount * c.perWinnerReward), 0),
+    totalParticipants: campaigns.reduce((sum, c) => sum + c.participantsCount, 0)
+  }
+}
+
+// ============================================
+// Unified Campaign Seed Data
+// ============================================
+
+import { UnifiedCampaign, UnifiedCampaignStatus } from '@/types'
+import { initializeWithSeedData } from '@/lib/campaign-store'
+
+/**
+ * Convert legacy Campaign to UnifiedCampaign format
+ */
+function legacyCampaignToUnified(campaign: Campaign): UnifiedCampaign {
+  // Map legacy campaign type to app type
+  const appTypeMap: Record<string, string> = {
+    'InfoFi': 'infofi',
+    'UGC': 'ugc',
+    'Clipping': 'clipping',
+    'Mini': 'mini',
+  }
+  
+  const appType = appTypeMap[campaign.type] || 'infofi'
+  
+  return {
+    id: campaign.id,
+    guildId: campaign.guildId,
+    guildName: campaign.guildName,
+    guildIcon: campaign.guildIcon,
+    appType,
+    appName: campaign.type,
+    name: campaign.name,
+    description: campaign.description,
+    thumbnail: campaign.thumbnail,
+    rewardPool: campaign.totalReward,
+    perWinnerReward: campaign.topWinners ? campaign.totalReward / campaign.topWinners : campaign.totalReward,
+    totalWinners: campaign.topWinners || 1,
+    token: campaign.rewardToken?.symbol || 'USDC',
+    blockchain: 'base',
+    status: campaign.status === 'active' ? 'active' : 
+            campaign.status === 'upcoming' ? 'draft' : 'completed',
+    createdAt: campaign.createdAt,
+    endDate: campaign.endDate,
+    participantsCount: campaign.participantsCount,
+    completedCount: Math.floor(campaign.participantsCount * 0.3), // Estimate
+    config: {
+      tags: campaign.tags,
+      category: campaign.category,
+      participationType: campaign.participationType,
+      platforms: campaign.platforms,
+      rules: campaign.rules,
+      howToParticipate: campaign.howToParticipate,
+      featured: campaign.featured,
+      forYou: campaign.forYou,
+      topWinners: campaign.topWinners,
+      userRank: campaign.userRank,
+    }
+  }
+}
+
+/**
+ * Convert SocialTask to UnifiedCampaign format (for instant tasks)
+ */
+function socialTaskToUnified(task: SocialTask): UnifiedCampaign {
+  const guild = guilds.find(g => g.id === task.guildId)
+  
+  // Map task action to distribution method
+  const payoutToDistribution: Record<string, string> = {
+    'fcfs': 'fcfs',
+    'raffle': 'raffle',
+    'capped': 'fcfs',
+  }
+  
+  return {
+    id: `unified-${task.id}`,
+    guildId: task.guildId,
+    guildName: task.guildName || guild?.name || 'Unknown',
+    guildIcon: task.brandIcon || guild?.icon || '',
+    appType: 'social-tasks',
+    appName: 'Social Tasks',
+    name: `${task.action.charAt(0).toUpperCase() + task.action.slice(1)} ${task.target.startsWith('http') ? truncateUrl(task.target) : task.target}`,
+    description: `Complete this ${task.action} task on Twitter to earn rewards`,
+    rewardPool: task.earnAmount * (task.slotsTotal || 100),
+    perWinnerReward: task.earnAmount,
+    totalWinners: task.slotsTotal || 100,
+    token: task.rewardToken?.symbol || 'USDC',
+    blockchain: 'base',
+    status: task.status === 'available' ? 'active' : 
+            task.status === 'completed' || task.status === 'rewarded' ? 'completed' : 'active',
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000), // Created yesterday
+    endDate: task.endTime,
+    participantsCount: task.slotsFilled || 0,
+    completedCount: task.slotsFilled || 0,
+    config: {
+      tasks: [{
+        type: task.action === 'retweet' ? 'quote' : task.action === 'reply' ? 'comment' : task.action,
+        targetAccount: task.action === 'follow' ? task.target : undefined,
+        targetPostUrl: task.action !== 'follow' ? task.target : undefined,
+      }],
+      distributionMethod: payoutToDistribution[task.payoutType] || 'fcfs',
+      payoutType: task.payoutType,
+      slotsTotal: task.slotsTotal,
+      slotsFilled: task.slotsFilled,
+      requiresConnect: task.requiresConnect,
+      isEligible: task.isEligible,
+      ineligibleReason: task.ineligibleReason,
+    }
+  }
+}
+
+/**
+ * Get all seed campaigns (legacy + social tasks converted to unified format)
+ * Called once on app initialization
+ */
+export function getSeedCampaigns(): UnifiedCampaign[] {
+  const unified: UnifiedCampaign[] = []
+  
+  // Convert legacy InfoFi campaigns
+  for (const guildCampaigns of Object.values(infofiCampaigns)) {
+    for (const campaign of guildCampaigns) {
+      unified.push(legacyCampaignToUnified(campaign))
+    }
+  }
+  
+  // Convert social tasks to unified campaigns
+  for (const task of socialTasks) {
+    // Only convert available tasks
+    if (task.status === 'available' || task.status === 'pending') {
+      unified.push(socialTaskToUnified(task))
+    }
+  }
+  
+  return unified
+}
+
+/**
+ * Initialize the unified campaign store with seed data
+ * Should be called once when the app starts (client-side only)
+ */
+let seedInitialized = false
+export function initializeSeedCampaigns(): void {
+  if (seedInitialized) return
+  if (typeof window === 'undefined') return
+  
+  seedInitialized = true
+  const seedCampaigns = getSeedCampaigns()
+  initializeWithSeedData(seedCampaigns)
+}
+
+// Auto-initialize on module load (client-side)
+if (typeof window !== 'undefined') {
+  // Delay initialization to ensure persistence is loaded first
+  setTimeout(() => {
+    initializeSeedCampaigns()
+  }, 0)
 }

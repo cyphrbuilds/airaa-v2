@@ -138,31 +138,13 @@ export default function AdminDashboardPage() {
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-zinc-400">Total Apps</span>
+                <span className="text-sm text-zinc-400">Available Apps</span>
                 <span className="text-sm font-medium text-white">{storeApps.length}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-zinc-400">Virality Apps</span>
+                <span className="text-sm text-zinc-400">Campaign Apps</span>
                 <span className="text-sm font-medium text-white">
-                  {storeApps.filter(a => a.category === 'Virality').length}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-zinc-400">Onchain Apps</span>
-                <span className="text-sm font-medium text-white">
-                  {storeApps.filter(a => a.category === 'Onchain').length}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-zinc-400">Video Apps</span>
-                <span className="text-sm font-medium text-white">
-                  {storeApps.filter(a => a.category === 'Video').length}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-zinc-400">Dapps Integrations</span>
-                <span className="text-sm font-medium text-white">
-                  {storeApps.filter(a => a.category === 'Dapps').length}
+                  {storeApps.filter(a => a.category === 'Campaigns').length}
                 </span>
               </div>
             </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useSyncExternalStore } from 'react'
 import { Search, ChevronDown, Check, ArrowRight } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -14,20 +14,28 @@ import {
   UnifiedTabs,
   SocialTaskCard,
   BundleTaskCard,
-  CampaignRewardCard,
+  SocialCampaignCard,
+  UnifiedCampaignCard,
   EarningsSummary,
   EmptyState,
   type UnifiedTab,
 } from '@/components/campaigns'
 import { 
-  getActiveCampaigns, 
+  getActiveCampaigns,
+  subscribeToCampaignStore,
+  getCampaignStoreSnapshot,
+  getCampaignStoreServerSnapshot,
+  getTotalRewardsInCampaigns
+} from '@/lib/campaign-store'
+import { 
   getTotalRewardsDistributed, 
   formatRewardsShort,
   getSocialTasks,
   getBundleTasks,
   getUserEarnings,
+  initializeSeedCampaigns,
 } from '@/lib/mock-data'
-import { SocialTask, BundleTask } from '@/types'
+import { SocialTask, BundleTask, UnifiedCampaign } from '@/types'
 import { cn } from '@/lib/utils'
 
 type SortOption = 'recommended' | 'highest' | 'ending'
@@ -43,8 +51,27 @@ export default function CampaignsPage() {
   const [selectedTab, setSelectedTab] = useState<UnifiedTab>('instant')
   const [sortBy, setSortBy] = useState<SortOption>('recommended')
 
-  const totalRewards = getTotalRewardsDistributed()
-  const allCampaigns = getActiveCampaigns()
+  // Subscribe to campaign store changes
+  useSyncExternalStore(
+    subscribeToCampaignStore,
+    getCampaignStoreSnapshot,
+    getCampaignStoreServerSnapshot
+  )
+
+  // Initialize seed campaigns (happens once)
+  if (typeof window !== 'undefined') {
+    initializeSeedCampaigns()
+  }
+
+  // Get data from unified store and mock-data
+  const totalGuildRewards = getTotalRewardsDistributed()
+  const totalCampaignRewards = getTotalRewardsInCampaigns()
+  const totalRewards = totalGuildRewards + totalCampaignRewards
+  
+  // Get all active campaigns from unified store
+  const allUnifiedCampaigns = getActiveCampaigns()
+  
+  // Legacy data for instant tasks (social tasks and bundle tasks)
   const allTasks = getSocialTasks()
   const allBundleTasks = getBundleTasks()
   const userEarnings = getUserEarnings()
@@ -59,7 +86,7 @@ export default function CampaignsPage() {
   // Determine if we're showing instant tasks or campaigns
   const isInstantMode = selectedTab === 'instant'
 
-  // Filter and sort social tasks
+  // Filter and sort social tasks (legacy instant tasks)
   const filteredTasks = useMemo(() => {
     let tasks = [...allTasks]
 
@@ -135,18 +162,21 @@ export default function CampaignsPage() {
     return { available, completed }
   }, [bundleTaskState, searchQuery, sortBy])
 
-  // Filter and sort campaigns
+  // Filter and sort unified campaigns (from all guilds)
   const filteredCampaigns = useMemo(() => {
-    let campaigns = [...allCampaigns]
+    let campaigns = [...allUnifiedCampaigns]
 
-    // Filter by tab/type
-    if (selectedTab !== 'instant') {
-      const typeMap: Record<string, string> = {
-        'infofi': 'InfoFi',
-        'ugc': 'UGC',
-        'clipping': 'Clipping',
-      }
-      campaigns = campaigns.filter(c => c.type === typeMap[selectedTab])
+    // Filter by tab/app type
+    // Map tab to app type
+    const tabToAppType: Record<UnifiedTab, string> = {
+      'instant': 'social-tasks',
+      'infofi': 'infofi',
+      'ugc': 'ugc',
+      'clipping': 'clipping',
+    }
+    const appType = tabToAppType[selectedTab]
+    if (appType) {
+      campaigns = campaigns.filter(c => c.appType === appType)
     }
 
     // Search filter
@@ -161,31 +191,36 @@ export default function CampaignsPage() {
     // Sort
     switch (sortBy) {
       case 'highest':
-        campaigns.sort((a, b) => b.totalReward - a.totalReward)
+        campaigns.sort((a, b) => b.rewardPool - a.rewardPool)
         break
       case 'ending':
-        campaigns.sort((a, b) => new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
+        campaigns.sort((a, b) => {
+          const aEnd = a.endDate?.getTime() || Infinity
+          const bEnd = b.endDate?.getTime() || Infinity
+          return aEnd - bEnd
+        })
         break
       case 'recommended':
       default:
-        // Featured first, then by reward
-        campaigns.sort((a, b) => {
-          if (a.featured && !b.featured) return -1
-          if (!a.featured && b.featured) return 1
-          return b.totalReward - a.totalReward
-        })
+        // By reward pool descending
+        campaigns.sort((a, b) => b.rewardPool - a.rewardPool)
     }
 
     return campaigns
-  }, [allCampaigns, selectedTab, searchQuery, sortBy])
+  }, [allUnifiedCampaigns, selectedTab, searchQuery, sortBy])
 
-  // Tab counts (include both single tasks and bundle tasks)
+  // Filter social-tasks campaigns for instant tab display
+  const instantCampaigns = useMemo(() => {
+    return allUnifiedCampaigns.filter(c => c.appType === 'social-tasks')
+  }, [allUnifiedCampaigns])
+
+  // Tab counts
   const tabCounts = useMemo(() => ({
-    instant: filteredTasks.available.length + filteredBundleTasks.available.length,
-    infofi: allCampaigns.filter(c => c.type === 'InfoFi').length,
-    ugc: allCampaigns.filter(c => c.type === 'UGC').length,
-    clipping: allCampaigns.filter(c => c.type === 'Clipping').length,
-  }), [filteredTasks.available.length, filteredBundleTasks.available.length, allCampaigns])
+    instant: filteredTasks.available.length + filteredBundleTasks.available.length + instantCampaigns.length,
+    infofi: allUnifiedCampaigns.filter(c => c.appType === 'infofi').length,
+    ugc: allUnifiedCampaigns.filter(c => c.appType === 'ugc').length,
+    clipping: allUnifiedCampaigns.filter(c => c.appType === 'clipping').length,
+  }), [filteredTasks.available.length, filteredBundleTasks.available.length, instantCampaigns.length, allUnifiedCampaigns])
 
   const handleTaskComplete = (taskId: string) => {
     // In a real app, this would call an API
@@ -248,7 +283,7 @@ export default function CampaignsPage() {
           
           {/* Subtitle */}
           <p className="text-zinc-400 text-base mb-8 max-w-xl mx-auto">
-            Earn rewards through social tasks, content creation, and more.
+            Earn rewards through social tasks, content creation, and more from all communities.
           </p>
 
           {/* Search Bar */}
@@ -316,9 +351,9 @@ export default function CampaignsPage() {
         {/* Task/Campaign List */}
         <div className="space-y-3">
           {isInstantMode ? (
-            // Instant Tasks (Social + Bundle)
+            // Instant Tasks (Social + Bundle + Social-Tasks Campaigns)
             <>
-              {filteredTasks.available.length > 0 || filteredTasks.pending.length > 0 || filteredBundleTasks.available.length > 0 ? (
+              {filteredTasks.available.length > 0 || filteredTasks.pending.length > 0 || filteredBundleTasks.available.length > 0 || instantCampaigns.length > 0 ? (
                 <>
                   {/* Pending single tasks */}
                   {filteredTasks.pending.map((task) => (
@@ -326,6 +361,14 @@ export default function CampaignsPage() {
                       key={task.id} 
                       task={task}
                       onComplete={handleTaskComplete}
+                    />
+                  ))}
+
+                  {/* Social-Tasks Campaigns from unified store (newly created) */}
+                  {instantCampaigns.map((campaign) => (
+                    <SocialCampaignCard
+                      key={campaign.id}
+                      campaign={campaign}
                     />
                   ))}
 
@@ -382,17 +425,18 @@ export default function CampaignsPage() {
               )}
             </>
           ) : (
-            // Campaign Rewards
+            // Campaign Rewards (InfoFi, UGC, Clipping from unified store)
             <>
               {filteredCampaigns.length > 0 ? (
-                filteredCampaigns.map((campaign) => (
-                  <CampaignRewardCard 
-                    key={campaign.id} 
-                    campaign={campaign}
-                    isEligible={Math.random() > 0.2} // Mock eligibility
-                    ineligibleReason={Math.random() > 0.5 ? 'Connect wallet' : 'Requirements not met'}
-                  />
-                ))
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {filteredCampaigns.map((campaign) => (
+                    <UnifiedCampaignCard 
+                      key={campaign.id} 
+                      campaign={campaign}
+                      showGuild={true}
+                    />
+                  ))}
+                </div>
               ) : (
                 <EmptyState 
                   type="no-campaigns" 

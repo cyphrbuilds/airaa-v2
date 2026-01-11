@@ -41,3 +41,34 @@ export function formatPercentage(value: number): string {
 export function truncateAddress(address: string, chars = 4): string {
   return `${address.slice(0, chars + 2)}...${address.slice(-chars)}`
 }
+
+/**
+ * Truncate a URL for display, especially useful for Twitter/X URLs
+ * Examples:
+ *   https://x.com/Uniswap/status/123456789 -> @Uniswap/...6789
+ *   https://x.com/Uniswap -> @Uniswap
+ *   https://example.com/very/long/path -> example.com/very/lo...
+ */
+export function truncateUrl(url: string, maxLength = 25): string {
+  // Handle Twitter/X URLs specially
+  const twitterMatch = url.match(/(?:x\.com|twitter\.com)\/([^\/]+)(?:\/status\/(\d+))?/)
+  if (twitterMatch) {
+    const [, username, statusId] = twitterMatch
+    if (statusId) {
+      return `@${username}/...${statusId.slice(-4)}`
+    }
+    return `@${username}`
+  }
+  
+  // Generic URL truncation
+  try {
+    const urlObj = new URL(url)
+    const display = urlObj.hostname + urlObj.pathname
+    if (display.length <= maxLength) return display
+    return display.slice(0, maxLength - 3) + '...'
+  } catch {
+    // Not a valid URL, just truncate
+    if (url.length <= maxLength) return url
+    return url.slice(0, maxLength - 3) + '...'
+  }
+}

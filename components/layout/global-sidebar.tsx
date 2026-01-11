@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Compass, Trophy, Medal, Plus, User, Crown, Users } from 'lucide-react'
+import { Compass, Trophy, Medal, Plus, User, Crown, Users, RotateCcw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/lib/auth-context'
 import { guilds, isUserAdminOrMod } from '@/lib/mock-data'
+import { resetAndReload } from '@/lib/persistence'
 import {
   Tooltip,
   TooltipContent,
@@ -18,9 +19,9 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 
 const navItems = [
   { id: 'discover', label: 'Discover', icon: Compass, href: '/discover' },
-  { id: 'communities', label: 'Communities', icon: Users, href: '/communities' },
   { id: 'campaigns', label: 'Campaigns', icon: Trophy, href: '/campaigns' },
-  { id: 'leaderboard', label: 'Leaderboard', icon: Medal, href: '/leaderboard' },
+  { id: 'communities', label: 'Communities', icon: Users, href: '/communities' },
+  // { id: 'leaderboard', label: 'Leaderboard', icon: Medal, href: '/leaderboard' }, // Hidden for now
 ]
 
 export function GlobalSidebar() {
@@ -236,6 +237,43 @@ export function GlobalSidebar() {
           </div>
         </div>
       </ScrollArea>
+
+      <Separator className="bg-zinc-800/50" />
+
+      {/* Reset Demo Button */}
+      <div className={cn("py-2", isCollapsed ? "px-3" : "px-3")}>
+        {isCollapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => {
+                  if (confirm('Reset all demo data? This will clear any campaigns and app installations you created.')) {
+                    resetAndReload()
+                  }
+                }}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors mx-auto"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" className="bg-zinc-900 border-zinc-700">
+              <p>Reset Demo</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <button
+            onClick={() => {
+              if (confirm('Reset all demo data? This will clear any campaigns and app installations you created.')) {
+                resetAndReload()
+              }
+            }}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
+          >
+            <RotateCcw className="h-4 w-4" />
+            <span className="text-sm">Reset Demo</span>
+          </button>
+        )}
+      </div>
 
       <Separator className="bg-zinc-800/50" />
 

@@ -5,9 +5,7 @@ import { Sparkles, Settings } from 'lucide-react'
 import { AppContainer } from '@/components/app-container'
 import { Button } from '@/components/ui/button'
 import { useGuild } from '@/lib/guild-context'
-import { getStoreAppBySlug, isUserAdminOrMod } from '@/lib/mock-data'
 import { HowItWorksModal } from '@/components/how-it-works'
-import { ViewModeBanner } from '@/components/admin/view-mode-banner'
 
 export default function GenericAppPage() {
   const params = useParams()
@@ -15,43 +13,27 @@ export default function GenericAppPage() {
   const appType = params.appType as string
   
   const { guild, allInstalledApps, getCustomizedApp } = useGuild()
-  const isAdminOrMod = isUserAdminOrMod(guildId)
   
   // Find the installed app by type/slug
   const installedApp = allInstalledApps.find(app => app.type === appType)
   
-  // Also check the store for more app details
-  const storeApp = getStoreAppBySlug(appType)
-  
-  // Get customized version if available
-  const appInfo = installedApp 
-    ? getCustomizedApp(installedApp) 
-    : storeApp 
-      ? { 
-          id: storeApp.id,
-          type: storeApp.slug,
-          name: storeApp.name, 
-          icon: '📦', 
-          description: storeApp.shortDescription,
-          color: storeApp.color,
-          installedAt: new Date()
-        }
-      : null
+  // Get customized version - ONLY if app is installed
+  const appInfo = installedApp ? getCustomizedApp(installedApp) : null
 
-  // App not found
+  // App not installed
   if (!appInfo) {
     return (
       <AppContainer
         appId={appType}
-        appName="App Not Found"
+        appName="App Not Installed"
         appIcon="❓"
-        appDescription="This app could not be found"
+        appDescription="This app is not available"
       >
         <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
           <div className="h-20 w-20 rounded-2xl bg-zinc-800/50 flex items-center justify-center text-5xl mb-6">
             ❓
           </div>
-          <h2 className="text-xl font-semibold text-zinc-200 mb-2">App Not Found</h2>
+          <h2 className="text-xl font-semibold text-zinc-200 mb-2">App Not Installed</h2>
           <p className="text-zinc-500 text-center max-w-sm">
             This app hasn't been installed in this guild yet.
           </p>
@@ -60,7 +42,7 @@ export default function GenericAppPage() {
     )
   }
 
-  const appColor = installedApp?.color || storeApp?.color || guild.accentColor
+  const appColor = installedApp?.color || guild.accentColor
 
   return (
     <AppContainer
@@ -69,17 +51,8 @@ export default function GenericAppPage() {
       appIcon={appInfo.icon}
       appDescription={appInfo.description}
       appColor={appColor}
-      headerActions={
-        <div className="flex items-center gap-2">
-          <ViewModeBanner 
-            guildId={guildId} 
-            appType={appType} 
-            isAdminOrMod={isAdminOrMod}
-            accentColor={appColor}
-          />
-          <HowItWorksModal appSlug={appType} communityName={guild.name} />
-        </div>
-      }
+      guildId={guildId}
+      headerActions={<HowItWorksModal appSlug={appType} communityName={guild.name} />}
     >
       {/* Empty State - Coming Soon */}
       <div className="flex flex-col items-center justify-center h-full min-h-[500px] px-4 relative">

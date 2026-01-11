@@ -3,7 +3,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { AppHeader } from './app-header'
 import { MembersPanel } from './members-panel'
+import { ViewModeBanner } from '@/components/admin/view-mode-banner'
 import { useGuild } from '@/lib/guild-context'
+import { isUserAdminOrMod } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 /**
@@ -21,6 +23,10 @@ export interface AppContainerProps {
   appDescription?: string
   /** Theme color for the app (defaults to guild accent color) */
   appColor?: string
+  
+  // Guild context for admin/member toggle
+  /** Guild ID - if provided, auto-shows admin/member view toggle for admins */
+  guildId?: string
   
   // Navigation
   /** Optional back link for navigation */
@@ -58,6 +64,7 @@ export function AppContainer({
   appIcon,
   appDescription,
   appColor,
+  guildId,
   backLink,
   showMembersToggle = true,
   defaultMembersPanelOpen = false,
@@ -69,6 +76,9 @@ export function AppContainer({
 }: AppContainerProps) {
   const { guild, members } = useGuild()
   const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(defaultMembersPanelOpen)
+  
+  // Check if user is admin/mod for auto-showing view toggle
+  const isAdminOrMod = guildId ? isUserAdminOrMod(guildId) : false
 
   // Load persisted state
   useEffect(() => {
@@ -112,6 +122,21 @@ export function AppContainer({
   const onlineCount = members.filter(m => m.isOnline).length
   const effectiveColor = appColor || guild.accentColor
 
+  // Combine auto-generated ViewModeBanner with custom headerActions
+  const combinedHeaderActions = (
+    <>
+      {guildId && isAdminOrMod && (
+        <ViewModeBanner 
+          guildId={guildId} 
+          appType={appId} 
+          isAdminOrMod={true}
+          accentColor={effectiveColor}
+        />
+      )}
+      {headerActions}
+    </>
+  )
+
   return (
     <div className={cn("flex h-full flex-col", className)}>
       {/* Fixed Header */}
@@ -126,7 +151,7 @@ export function AppContainer({
         onlineCount={onlineCount}
         isMembersPanelOpen={isMembersPanelOpen}
         onToggleMembersPanel={toggleMembersPanel}
-        headerActions={headerActions}
+        headerActions={combinedHeaderActions}
       />
 
       {/* Content Area with Members Panel */}

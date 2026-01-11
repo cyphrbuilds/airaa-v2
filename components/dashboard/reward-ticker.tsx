@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { RewardPayout } from '@/types'
-import { formatRewardsShort } from '@/lib/mock-data'
 
 interface RewardTickerProps {
   payouts: RewardPayout[]
@@ -11,6 +10,32 @@ interface RewardTickerProps {
 export function RewardTicker({ payouts }: RewardTickerProps) {
   // Duplicate payouts for seamless loop
   const items = [...payouts, ...payouts]
+
+  const formatRewardDisplay = (payout: RewardPayout) => {
+    if (payout.rewardType === 'token') {
+      return (
+        <span className="flex items-center gap-1.5 text-sm font-semibold text-green-500">
+          earned
+          {payout.tokenIcon && (
+            <img
+              src={payout.tokenIcon}
+              alt={payout.tokenSymbol}
+              className="h-4 w-4 rounded-full"
+            />
+          )}
+          <span>{payout.amount.toLocaleString()}</span>
+          <span>${payout.tokenSymbol}</span>
+        </span>
+      )
+    } else {
+      // Points reward
+      return (
+        <span className="text-sm font-semibold text-green-500">
+          earned {payout.amount.toLocaleString()} {payout.pointsName}
+        </span>
+      )
+    }
+  }
 
   return (
     <div className="relative w-full overflow-hidden border-b border-zinc-800/50 py-2.5">
@@ -26,11 +51,9 @@ export function RewardTicker({ payouts }: RewardTickerProps) {
               className="h-5 w-5 rounded-full"
             />
             <span className="text-sm font-medium text-zinc-200">
-              @{payout.username}
+              {payout.username}
             </span>
-            <span className="text-sm font-semibold text-green-500">
-              earned ${formatRewardsShort(payout.amount)}
-            </span>
+            {formatRewardDisplay(payout)}
             <span className="text-sm text-zinc-500">from</span>
             <Link
               href={`/guild/${payout.guildId}`}

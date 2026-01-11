@@ -35,7 +35,7 @@ import {
 
 import {
   guilds,
-  campaigns,
+  infofiCampaigns,
   guildMembers,
   announcements,
   leaderboardUsers,
@@ -53,6 +53,12 @@ import {
   getOrCreateSupportConversation,
   addSupportMessage,
   markConversationAsRead,
+  getActiveCampaigns,
+  getCampaignById,
+  getCampaignsByGuild,
+  getCampaignsByType,
+  getFeaturedCampaigns,
+  getForYouCampaigns,
 } from '@/lib/mock-data'
 
 // Simulate network delay for realistic UX testing
@@ -156,14 +162,14 @@ export const campaignsApi = {
    * Get all campaigns
    */
   async getAll(): Promise<Campaign[]> {
-    return delay(campaigns)
+    return delay(getActiveCampaigns())
   },
 
   /**
    * Get a single campaign by ID
    */
   async getById(id: string): Promise<Campaign | undefined> {
-    const campaign = campaigns.find(c => c.id === id)
+    const campaign = getCampaignById(id)
     return delay(campaign)
   },
 
@@ -171,35 +177,35 @@ export const campaignsApi = {
    * Get campaigns by guild
    */
   async getByGuild(guildId: string): Promise<Campaign[]> {
-    return delay(campaigns.filter(c => c.guildId === guildId))
+    return delay(getCampaignsByGuild(guildId))
   },
 
   /**
    * Get campaigns by type within a guild
    */
   async getByType(guildId: string, type: CampaignType): Promise<Campaign[]> {
-    return delay(campaigns.filter(c => c.guildId === guildId && c.type === type))
+    return delay(getCampaignsByType(guildId, type))
   },
 
   /**
    * Get active campaigns
    */
   async getActive(): Promise<Campaign[]> {
-    return delay(campaigns.filter(c => c.status === 'active'))
+    return delay(getActiveCampaigns())
   },
 
   /**
    * Get featured campaigns
    */
   async getFeatured(): Promise<Campaign[]> {
-    return delay(campaigns.filter(c => c.featured && c.status === 'active'))
+    return delay(getFeaturedCampaigns())
   },
 
   /**
    * Get "For You" personalized campaigns
    */
   async getForYou(): Promise<Campaign[]> {
-    return delay(campaigns.filter(c => c.forYou && c.status === 'active'))
+    return delay(getForYouCampaigns())
   },
 
   /**

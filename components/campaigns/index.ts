@@ -1,6 +1,8 @@
 export { UnifiedTabs, type UnifiedTab } from './unified-tabs'
 export { SocialTaskCard } from './social-task-card'
 export { BundleTaskCard } from './bundle-task-card'
+export { SocialCampaignCard } from './social-campaign-card'
 export { CampaignRewardCard } from './campaign-reward-card'
+export { UnifiedCampaignCard } from './unified-campaign-card'
 export { EarningsSummary } from './earnings-summary'
 export { EmptyState } from './empty-state'
